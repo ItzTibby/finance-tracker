@@ -2317,7 +2317,7 @@ function EmergencyTab() {
 // ── Bank ──────────────────────────────────────────────────────────────────────
 function BankTab() {
   const {th,fmt,tx,setTx}=useCtx();
-  const SERVER = 'http://localhost:3001';
+  const SERVER = 'https://finance-tracker-production-0890.up.railway.app';
 
   const [status,    setStatus]    = useState(null);  // null | {connected, env}
   const [accounts,  setAccounts]  = useState([]);
