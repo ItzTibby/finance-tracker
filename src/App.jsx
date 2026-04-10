@@ -17,10 +17,17 @@ const DK={bg:'#000000',s:'#0a0a0a',s2:'#050505',bd:'#1a1a1a',bd2:'#111',t:'#ffff
 const LT={bg:'#ffffff',s:'#f5f5f5',s2:'#efefef',bd:'#e0e0e0',bd2:'#e8e8e8',t:'#000000',t2:'#555',t3:'#999',t4:'#ddd',acc:'#111111',accBg:'#f0f0f0',accMid:'#333333',inc:'#00994d',incBg:'#d6ffed',exp:'#e02020',expBg:'#ffe0e0'};
 
 const CATS=[
-  {name:'Housing',icon:'🏠',c:'#0066FF'},{name:'Food',icon:'🍽️',c:'#0044bb'},
-  {name:'Transport',icon:'🚗',c:'#3385ff'},{name:'Health',icon:'💊',c:'#0055dd'},
-  {name:'Shopping',icon:'🛍️',c:'#0077ff'},{name:'Entertainment',icon:'🎭',c:'#0033aa'},
-  {name:'Savings',icon:'💰',c:'#66aaff'},{name:'Other',icon:'📦',c:'#1a55cc'},
+  {name:'Housing',      icon:'🏠',c:'#FF4757'},
+  {name:'Bills',        icon:'📄',c:'#FFA502'},
+  {name:'Transport',    icon:'🚗',c:'#2ED573'},
+  {name:'Subscriptions',icon:'📱',c:'#A855F7'},
+  {name:'Debt',         icon:'💳',c:'#FF6B9D'},
+  {name:'Health',       icon:'💊',c:'#00D2D3'},
+  {name:'Shopping',     icon:'🛍️',c:'#ECCC68'},
+  {name:'Personal',     icon:'👤',c:'#FF6348'},
+  {name:'Entertainment',icon:'🎭',c:'#1E90FF'},
+  {name:'Savings',      icon:'💰',c:'#26D07C'},
+  {name:'Other',        icon:'📦',c:'#747D8C'},
 ];
 const ICATS=['Salary','Freelance','Investment','Gift','Other'];
 const EVT={
@@ -240,10 +247,8 @@ export default function App() {
   const fmt  = n => fmtCurrency(n*rate, curr, currObj.locale);
   const fmtS = n => {
     const v=n*rate;
-    const c=fmtCurrency(v,curr,currObj.locale);
     if(Math.abs(v)>=1000000) return fmtCurrency(v/1000000,curr,currObj.locale).replace(/[\d,.]+/,x=>(v/1000000).toFixed(1))+'M';
-    if(Math.abs(v)>=1000)    return fmtCurrency(v/1000,curr,currObj.locale).replace(/[\d,.]+/,x=>(v/1000).toFixed(1))+'k';
-    return c;
+    return fmtCurrency(v,curr,currObj.locale);
   };
 
   useEffect(()=>{
@@ -619,7 +624,7 @@ function DashTab({onAdd}) {
               </defs>
               <XAxis dataKey="label" tick={{fill:th.t3,fontSize:12,fontFamily:"'Plus Jakarta Sans',sans-serif"}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fill:th.t3,fontSize:11}} axisLine={false} tickLine={false} tickFormatter={v=>`£${v}`}/>
-              <Tooltip contentStyle={{background:th.s,border:`1px solid ${th.bd}`,borderRadius:10,color:th.t,fontSize:12}}/>
+              <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}}/>
               <Area type="monotone" dataKey="income"  stroke={th.inc} strokeWidth={2} fill="url(#gi)" dot={false}/>
               <Area type="monotone" dataKey="expense" stroke={th.exp} strokeWidth={2} fill="url(#ge)" dot={false}/>
             </AreaChart>
@@ -644,7 +649,7 @@ function DashTab({onAdd}) {
                   <Pie data={expByCat} dataKey="value" innerRadius={36} outerRadius={52} paddingAngle={3} stroke="none">
                     {expByCat.map((e,i)=><Cell key={i} fill={e.c}/>)}
                   </Pie>
-                  <Tooltip contentStyle={{background:th.s,border:`1px solid ${th.bd}`,borderRadius:10,color:th.t,fontSize:12}} formatter={v=>[fmt(v)]}/>
+                  <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={v=>[fmt(v)]}/>
                 </PieChart>
               </ResponsiveContainer>
               <div style={{display:'flex',flexDirection:'column',gap:7}}>
@@ -830,7 +835,7 @@ function AllTimeTab() {
               </defs>
               <XAxis dataKey="label" tick={{fill:th.t3,fontSize:11,fontFamily:"'Plus Jakarta Sans',sans-serif"}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fill:th.t3,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`£${v}`}/>
-              <Tooltip contentStyle={{background:th.s,border:`1px solid ${th.bd}`,borderRadius:10,color:th.t,fontSize:12}}/>
+              <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}}/>
               <Area type="monotone" dataKey="income"  stroke={th.inc} strokeWidth={2} fill="url(#agi)" dot={monthData.length<24}/>
               <Area type="monotone" dataKey="expense" stroke={th.exp} strokeWidth={2} fill="url(#age)" dot={monthData.length<24}/>
             </AreaChart>
@@ -1018,7 +1023,7 @@ function IncomeTab({onAdd}) {
                         return <Cell key={i} fill={shades[i]||shades[shades.length-1]}/>;
                       })}
                     </Pie>
-                    <Tooltip contentStyle={{background:th.s,border:`1px solid ${th.bd}`,borderRadius:10,color:th.t,fontSize:12}} formatter={v=>[fmt(v)]}/>
+                    <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={v=>[fmt(v)]}/>
                   </PieChart>
                 </ResponsiveContainer>
                 {/* Centre label */}
@@ -1090,7 +1095,7 @@ function IncomeTab({onAdd}) {
                 </defs>
                 <XAxis dataKey="label" tick={{fill:th.t3,fontSize:11,fontFamily:"'Plus Jakarta Sans',sans-serif"}} axisLine={false} tickLine={false}/>
                 <YAxis tick={{fill:th.t3,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`£${v}`}/>
-                <Tooltip contentStyle={{background:th.s,border:`1px solid ${th.bd}`,borderRadius:10,color:th.t,fontSize:12}} formatter={v=>[fmt(v),'Income']}/>
+                <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={v=>[fmt(v),'Income']}/>
                 <Area type="monotone" dataKey="total" stroke={th.inc} strokeWidth={2} fill="url(#incGrad)" dot={{fill:th.inc,r:3,strokeWidth:0}}/>
               </AreaChart>
             </ResponsiveContainer>
@@ -1598,7 +1603,7 @@ function MonthlyTab() {
                   <Pie data={expByCat} dataKey="value" innerRadius={50} outerRadius={72} paddingAngle={3} stroke="none">
                     {expByCat.map((e,i)=><Cell key={i} fill={e.c}/>)}
                   </Pie>
-                  <Tooltip contentStyle={{background:th.s,border:`1px solid ${th.bd}`,borderRadius:10,color:th.t,fontSize:12}} formatter={v=>[fmt(v)]}/>
+                  <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={v=>[fmt(v)]}/>
                 </PieChart>
               </ResponsiveContainer>
               <div style={{display:'flex',flexDirection:'column',gap:8,marginTop:4}}>
