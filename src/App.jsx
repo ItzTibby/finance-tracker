@@ -232,7 +232,13 @@ export default function App() {
   const [modal,   setModal]   = useState(null);
   const [bDemo,   setBDemo]   = useLS('ft3_bdemo', false);
   const [pin,     setPin]     = useLS('ft3_pin', '');
-  const [authed,  setAuthed]  = useState(!localStorage.getItem('ft3_pin'));
+  const [authed,  setAuthed]  = useState(() => {
+    try {
+      return !localStorage.getItem('ft3_pin');
+    } catch {
+      return true;
+    }
+  });
 
   const [tx,     setTx]    = useLS('ft3_tx',    []);
   const [budg,   setBudg]  = useLS('ft3_budg',  CATS.map(c=>({category:c.name,limit:500})));
@@ -2967,7 +2973,7 @@ function EventModal({onClose}) {
         </div>
         <div style={{display:'flex',gap:10,marginTop:24}}>
           <button className="bout" onClick={onClose} style={{flex:1}}>Cancel</button>
-          <button className="btn" onClick={()=>{if(!title||!date)return;setCal([...cal,{id:Date.now(),title,date,type,amount:amount?+amount:null,recurring:recur}]);onClose();}} style={{flex:2}}>Save Event</button>
+          <button className="btn" onClick={()=>{if(!title||!date)return;setCal(prev=>[...prev,{id:Date.now(),title,date,type,amount:amount?+amount:null,recurring:recur}]);onClose();}} style={{flex:2}}>Save Event</button>
         </div>
       </div>
     </div>
