@@ -595,8 +595,8 @@ function DashTab({onAdd}) {
       {/* Monthly summary cards */}
       <div className="g3" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16,marginBottom:22}}>
         {[
-          {l:'This Month Income',  v:mIncome,  c:th.inc, d:delta(mIncome,pIncome),   inv:false},
-          {l:'This Month Expenses',v:mExpense, c:th.exp, d:delta(mExpense,pExpense), inv:true},
+          {l:'This Month\'s Income',  v:mIncome,  c:th.inc, d:delta(mIncome,pIncome),   inv:false},
+          {l:'This Month\'s Expenses',v:mExpense, c:th.exp, d:delta(mExpense,pExpense), inv:true},
           {l:'Net This Month',     v:mBalance, c:mBalance>=0?th.acc:th.exp, d:null},
         ].map(c=>(
           <div key={c.l} className="card">
@@ -624,7 +624,7 @@ function DashTab({onAdd}) {
               </defs>
               <XAxis dataKey="label" tick={{fill:th.t3,fontSize:12,fontFamily:"'Plus Jakarta Sans',sans-serif"}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fill:th.t3,fontSize:11}} axisLine={false} tickLine={false} tickFormatter={v=>`£${v}`}/>
-              <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}}/>
+              <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={(v,n)=>[fmt(v),(n||'value').charAt(0).toUpperCase()+(n||'value').slice(1)]}/>
               <Area type="monotone" dataKey="income"  stroke={th.inc} strokeWidth={2} fill="url(#gi)" dot={false}/>
               <Area type="monotone" dataKey="expense" stroke={th.exp} strokeWidth={2} fill="url(#ge)" dot={false}/>
             </AreaChart>
@@ -649,7 +649,7 @@ function DashTab({onAdd}) {
                   <Pie data={expByCat} dataKey="value" innerRadius={36} outerRadius={52} paddingAngle={3} stroke="none">
                     {expByCat.map((e,i)=><Cell key={i} fill={e.c}/>)}
                   </Pie>
-                  <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={v=>[fmt(v)]}/>
+                  <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={(v,n)=>[fmt(v),(n||'value').charAt(0).toUpperCase()+(n||'value').slice(1)]}/>
                 </PieChart>
               </ResponsiveContainer>
               <div style={{display:'flex',flexDirection:'column',gap:7}}>
@@ -720,16 +720,61 @@ function DashTab({onAdd}) {
         </div>
       )}
 
-      {/* Recent this month */}
-      <div className="card">
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-          <div className="sl" style={{marginBottom:0}}>Recent Transactions</div>
-          <span className="mono" style={{fontSize:11}}>{monthTx.length} this month</span>
+      {/* Upcoming payments + Recent transactions */}
+      <div className="g2" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+
+        {/* Upcoming scheduled payments */}
+        <div className="card">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+            <div className="sl" style={{marginBottom:0}}>Upcoming Payments</div>
+          </div>
+          {(()=>{
+            const today=new Date();
+            const upcoming=cal
+              .filter(e=>e.amount&&(e.type==='bill'||e.type==='subscription'||e.type==='payday'))
+              .map(e=>{
+                const d=new Date(e.date);
+                // Find next occurrence (this month or next)
+                let next=new Date(today.getFullYear(),today.getMonth(),d.getDate());
+                if(next<today) next=new Date(today.getFullYear(),today.getMonth()+1,d.getDate());
+                const daysLeft=Math.ceil((next-today)/(1000*60*60*24));
+                return {...e,nextDate:next,daysLeft};
+              })
+              .sort((a,b)=>a.daysLeft-b.daysLeft)
+              .slice(0,6);
+            if(upcoming.length===0) return <EmptyState icon="📅" title="No scheduled payments" sub="Add events to your calendar with amounts to see them here."/>;
+            const EVT_COLORS={payday:th.inc,bill:th.exp,subscription:'#A855F7'};
+            return upcoming.map(e=>(
+              <div key={e.id} className="txr">
+                <div style={{width:36,height:36,borderRadius:10,background:th.s2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,flexShrink:0}}>
+                  {e.type==='payday'?'💰':e.type==='subscription'?'📱':'📄'}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:500,color:th.t}}>{e.title}</div>
+                  <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,color:th.t3,marginTop:2}}>
+                    {e.daysLeft===0?'Today':e.daysLeft===1?'Tomorrow':`In ${e.daysLeft} days`} · {e.nextDate.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+                  </div>
+                </div>
+                <span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:13,fontWeight:600,color:EVT_COLORS[e.type]||th.t,flexShrink:0}}>
+                  {e.type==='payday'?'+':'-'}{fmt(e.amount)}
+                </span>
+              </div>
+            ));
+          })()}
         </div>
-        {monthTx.length===0
-          ?<EmptyState icon="📭" title="No transactions this month" sub="Add your first transaction for the month to get started." action="+ Add Transaction" onAction={onAdd}/>
-          :monthTx.slice().reverse().slice(0,6).map(t=><TxRow key={t.id} t={t} onDel={()=>setTx(tx.filter(x=>x.id!==t.id))}/>)
-        }
+
+        {/* Recent this month */}
+        <div className="card">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+            <div className="sl" style={{marginBottom:0}}>Recent Transactions</div>
+            <span className="mono" style={{fontSize:11}}>{monthTx.length} this month</span>
+          </div>
+          {monthTx.length===0
+            ?<EmptyState icon="📭" title="No transactions this month" sub="Add your first transaction for the month to get started." action="+ Add Transaction" onAction={onAdd}/>
+            :monthTx.slice().reverse().slice(0,6).map(t=><TxRow key={t.id} t={t} onDel={()=>setTx(tx.filter(x=>x.id!==t.id))}/>)
+          }
+        </div>
+
       </div>
     </>
   );
@@ -835,7 +880,7 @@ function AllTimeTab() {
               </defs>
               <XAxis dataKey="label" tick={{fill:th.t3,fontSize:11,fontFamily:"'Plus Jakarta Sans',sans-serif"}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fill:th.t3,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`£${v}`}/>
-              <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}}/>
+              <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={(v,n)=>[fmt(v),(n||'value').charAt(0).toUpperCase()+(n||'value').slice(1)]}/>
               <Area type="monotone" dataKey="income"  stroke={th.inc} strokeWidth={2} fill="url(#agi)" dot={monthData.length<24}/>
               <Area type="monotone" dataKey="expense" stroke={th.exp} strokeWidth={2} fill="url(#age)" dot={monthData.length<24}/>
             </AreaChart>
@@ -1023,7 +1068,7 @@ function IncomeTab({onAdd}) {
                         return <Cell key={i} fill={shades[i]||shades[shades.length-1]}/>;
                       })}
                     </Pie>
-                    <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={v=>[fmt(v)]}/>
+                    <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={(v,n)=>[fmt(v),(n||'value').charAt(0).toUpperCase()+(n||'value').slice(1)]}/>
                   </PieChart>
                 </ResponsiveContainer>
                 {/* Centre label */}
@@ -1095,7 +1140,7 @@ function IncomeTab({onAdd}) {
                 </defs>
                 <XAxis dataKey="label" tick={{fill:th.t3,fontSize:11,fontFamily:"'Plus Jakarta Sans',sans-serif"}} axisLine={false} tickLine={false}/>
                 <YAxis tick={{fill:th.t3,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`£${v}`}/>
-                <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={v=>[fmt(v),'Income']}/>
+                <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={(v,n)=>[fmt(v),n.charAt(0).toUpperCase()+n.slice(1)]}/>
                 <Area type="monotone" dataKey="total" stroke={th.inc} strokeWidth={2} fill="url(#incGrad)" dot={{fill:th.inc,r:3,strokeWidth:0}}/>
               </AreaChart>
             </ResponsiveContainer>
@@ -1603,7 +1648,7 @@ function MonthlyTab() {
                   <Pie data={expByCat} dataKey="value" innerRadius={50} outerRadius={72} paddingAngle={3} stroke="none">
                     {expByCat.map((e,i)=><Cell key={i} fill={e.c}/>)}
                   </Pie>
-                  <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={v=>[fmt(v)]}/>
+                  <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={(v,n)=>[fmt(v),(n||'value').charAt(0).toUpperCase()+(n||'value').slice(1)]}/>
                 </PieChart>
               </ResponsiveContainer>
               <div style={{display:'flex',flexDirection:'column',gap:8,marginTop:4}}>
