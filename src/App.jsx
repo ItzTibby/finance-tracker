@@ -13,8 +13,8 @@ function useLS(key, def) {
   return [v, set];
 }
 
-const DK={bg:'#000000',s:'#0a0a0a',s2:'#050505',bd:'#1a1a1a',bd2:'#111',t:'#ffffff',t2:'#999',t3:'#444',t4:'#1f1f1f',acc:'#0066FF',accBg:'#00112e',accMid:'#003399',inc:'#00FF88',incBg:'#001a0f',exp:'#FF3D3D',expBg:'#1a0000'};
-const LT={bg:'#ffffff',s:'#f5f5f5',s2:'#efefef',bd:'#e0e0e0',bd2:'#e8e8e8',t:'#000000',t2:'#555',t3:'#999',t4:'#ddd',acc:'#0066FF',accBg:'#deeaff',accMid:'#0055dd',inc:'#00994d',incBg:'#d6ffed',exp:'#e02020',expBg:'#ffe0e0'};
+const DK={bg:'#000000',s:'#0a0a0a',s2:'#050505',bd:'#1a1a1a',bd2:'#111',t:'#ffffff',t2:'#999',t3:'#444',t4:'#1f1f1f',acc:'#ffffff',accBg:'#111111',accMid:'#cccccc',inc:'#00FF88',incBg:'#001a0f',exp:'#FF3D3D',expBg:'#1a0000'};
+const LT={bg:'#ffffff',s:'#f5f5f5',s2:'#efefef',bd:'#e0e0e0',bd2:'#e8e8e8',t:'#000000',t2:'#555',t3:'#999',t4:'#ddd',acc:'#111111',accBg:'#f0f0f0',accMid:'#333333',inc:'#00994d',incBg:'#d6ffed',exp:'#e02020',expBg:'#ffe0e0'};
 
 const CATS=[
   {name:'Housing',icon:'🏠',c:'#0066FF'},{name:'Food',icon:'🍽️',c:'#0044bb'},
@@ -74,19 +74,19 @@ function mkCSS(th){return`
 /* Nav buttons */
 .nb{background:none;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:11px 14px;border-radius:9px;transition:all .18s;text-align:left;display:flex;align-items:center;gap:10px;width:100%;color:${th.t3}}
 .nb:hover{color:${th.t};background:${th.s};transform:translateX(2px)}
-.nb.on{background:linear-gradient(135deg,${th.acc},${th.accMid});color:#fff;box-shadow:0 4px 16px ${th.acc}44}
+.nb.on{background:rgba(255,255,255,0.07);color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,0.1),inset 0 0 20px rgba(255,255,255,0.03)}
 
 /* Buttons */
-.btn{background:linear-gradient(135deg,${th.acc},${th.accMid});border:none;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:11px 22px;border-radius:9px;cursor:pointer;transition:all .18s;white-space:nowrap;box-shadow:0 4px 14px ${th.acc}44}
-.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px ${th.acc}55;opacity:.92}
+.btn{background:#ffffff;border:none;color:#000;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:11px 22px;border-radius:9px;cursor:pointer;transition:all .18s;white-space:nowrap;box-shadow:0 0 20px rgba(255,255,255,0.18),0 0 40px rgba(255,255,255,0.06)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 0 28px rgba(255,255,255,0.28),0 0 50px rgba(255,255,255,0.1);opacity:.95}
 .btn:active{transform:translateY(0)}
 .bout{background:transparent;border:1px solid ${th.bd};color:${th.t3};font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:10px 20px;border-radius:9px;cursor:pointer;transition:all .18s}
-.bout:hover{border-color:${th.acc};color:${th.acc};background:${th.acc}0d}
+.bout:hover{border-color:rgba(255,255,255,0.3);color:${th.t};background:rgba(255,255,255,0.04)}
 
 /* Cards */
-.card{background:linear-gradient(145deg,${th.s},${th.s2});border:1px solid ${th.bd};border-radius:16px;padding:26px;position:relative;overflow:hidden;box-shadow:0 2px 12px #00000022;transition:box-shadow .2s}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,${th.acc}22,transparent)}
-.card:hover{box-shadow:0 4px 24px #00000033}
+.card{background:linear-gradient(145deg,${th.s},${th.s2});border:1px solid ${th.bd};border-radius:16px;padding:26px;position:relative;overflow:hidden;box-shadow:0 2px 12px #00000022,0 0 0 1px rgba(255,255,255,0.03);transition:box-shadow .2s}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent)}
+.card:hover{box-shadow:0 4px 24px #00000033,0 0 0 1px rgba(255,255,255,0.05)}
 .cardsm{background:linear-gradient(145deg,${th.s},${th.s2});border:1px solid ${th.bd};border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px #00000018}
 
 /* Inputs */
@@ -339,7 +339,7 @@ export default function App() {
           <div style={{display:'flex',flexDirection:'column',gap:1,flex:1}}>
             {TAB_GROUPS.map((group,gi)=>(
               <div key={group.label} style={{marginBottom:6}}>
-                <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:9,fontWeight:700,letterSpacing:'.16em',textTransform:'uppercase',color:th.t4,padding:'8px 12px 4px',userSelect:'none'}}>{group.label}</div>
+                <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:10,fontWeight:800,letterSpacing:'.2em',textTransform:'uppercase',color:th.t2,padding:'10px 12px 4px',userSelect:'none',borderTop:`1px solid ${th.bd2}`,marginTop:4}}>{group.label}</div>
                 {group.tabs.map(([k,ic,lb])=>(
                   <button key={k} className={`nb${tab===k?' on':''}`} onClick={()=>{setTab(k);setSidebarOpen(false);}}>
                     <span style={{fontSize:13,opacity:.7}}>{ic}</span>{lb}
@@ -351,7 +351,7 @@ export default function App() {
           <div style={{borderTop:`1px solid ${th.bd2}`,paddingTop:16,marginTop:8}}>
             <div style={{paddingLeft:6,marginBottom:14}}>
               <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:10,fontWeight:700,textTransform:'uppercase',color:th.t3,marginBottom:4}}>Net Balance</div>
-              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:balance>=0?th.acc:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmtS(balance)}</div>
+              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:balance>=0?th.acc:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif",textShadow:balance>=0?'0 0 20px rgba(255,255,255,0.3)':'0 0 20px rgba(255,61,61,0.4)'}}>{fmtS(balance)}</div>
               {curr!=='GBP'&&<div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:10,color:th.t3,marginTop:3}}>1 GBP ≈ {(rates[curr]||1).toFixed(4)} {curr}</div>}
             </div>
             <div style={{display:'flex',gap:6}}>
@@ -410,16 +410,16 @@ export default function App() {
           style={{
             position:'fixed',bottom:28,right:28,zIndex:100,
             width:56,height:56,borderRadius:'50%',
-            background:`linear-gradient(135deg,${th.acc},${th.accMid})`,
-            border:'none',color:'#fff',fontSize:26,fontWeight:300,
-            cursor:'pointer',boxShadow:`0 6px 24px ${th.acc}66`,
+            background:`#ffffff`,
+            border:'none',color:'#000',fontSize:26,fontWeight:700,
+            cursor:'pointer',boxShadow:`0 0 24px rgba(255,255,255,0.25),0 0 48px rgba(255,255,255,0.08)`,
             display:'flex',alignItems:'center',justifyContent:'center',
             transition:'all .18s cubic-bezier(.4,0,.2,1)',
             lineHeight:1,
           }}
           className="fab"
-          onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.12)';e.currentTarget.style.boxShadow=`0 8px 32px ${th.acc}88`;}}
-          onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow=`0 6px 24px ${th.acc}66`;}}
+          onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.12)';e.currentTarget.style.boxShadow=`0 0 32px rgba(255,255,255,0.35),0 0 60px rgba(255,255,255,0.12)`;}}
+          onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow=`0 0 24px rgba(255,255,255,0.25),0 0 48px rgba(255,255,255,0.08)`;}}
           title="Add transaction"
         >+</button>
       )}
