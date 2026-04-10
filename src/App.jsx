@@ -2944,36 +2944,139 @@ function GoalModal({onClose}) {
   );
 }
 
-function EventModal({onClose}) {
-  const {th,cal,setCal}=useCtx();
-  const [title,setTitle]=useState('');
-  const [date,setDate]=useState(new Date().toISOString().split('T')[0]);
-  const [type,setType]=useState('bill');
-  const [amount,setAmount]=useState('');
-  const [recur,setRecur]=useState(false);
+function EventModal({ onClose }) {
+  const { th, cal, setCal } = useCtx();
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [type, setType] = useState('bill');
+  const [amount, setAmount] = useState('');
+  const [recur, setRecur] = useState(false);
+
   return (
-    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal">
-        <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:20,fontWeight:800,marginBottom:24,color:th.t}}>New Calendar Event</div>
-        <div style={{display:'grid',gap:14}}>
-          <div><label>Title</label><input type="text" placeholder="e.g. Monthly Salary" value={title} onChange={e=>setTitle(e.target.value)}/></div>
-          <div><label>Type</label>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-              {Object.entries(EVT).map(([k,v])=>(
-                <button key={k} onClick={()=>setType(k)} style={{padding:'9px 10px',border:`1px solid ${type===k?v.color+'55':th.bd2}`,borderRadius:9,background:type===k?v.bg:'transparent',color:type===k?v.color:th.t3,cursor:'pointer',fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:10,fontWeight:700,textTransform:'uppercase',transition:'all .12s'}}>{v.label}</button>
+        <div
+          style={{
+            fontFamily: "'Plus Jakarta Sans',sans-serif",
+            fontSize: 20,
+            fontWeight: 800,
+            marginBottom: 24,
+            color: th.t
+          }}
+        >
+          New Calendar Event
+        </div>
+
+        <div style={{ display: 'grid', gap: 14 }}>
+          <div>
+            <label>Title</label>
+            <input
+              type="text"
+              placeholder="e.g. Monthly Salary"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label>Type</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {Object.entries(EVT).map(([k, v]) => (
+                <button
+                  key={k}
+                  onClick={() => setType(k)}
+                  style={{
+                    padding: '9px 10px',
+                    border: `1px solid ${type === k ? v.color + '55' : th.bd2}`,
+                    borderRadius: 9,
+                    background: type === k ? v.bg : 'transparent',
+                    color: type === k ? v.color : th.t3,
+                    cursor: 'pointer',
+                    fontFamily: "'Plus Jakarta Sans',sans-serif",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    transition: 'all .12s'
+                  }}
+                >
+                  {v.label}
+                </button>
               ))}
             </div>
           </div>
-          <div><label>Date</label><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
-          <div><label>Amount £ (optional)</label><input type="number" placeholder="0.00" value={amount} onChange={e=>setAmount(e.target.value)}/></div>
-          <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <input type="checkbox" id="erec" checked={recur} onChange={e=>setRecur(e.target.checked)} style={{width:15,height:15,accentColor:th.t}}/>
-            <label htmlFor="erec" style={{margin:0,cursor:'pointer',textTransform:'none',letterSpacing:0,fontSize:13,color:th.t2,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Recurring monthly</label>
+
+          <div>
+            <label>Date</label>
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label>Amount £ (optional)</label>
+            <input
+              type="number"
+              placeholder="0.00"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+            />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <input
+              type="checkbox"
+              id="erec"
+              checked={recur}
+              onChange={e => setRecur(e.target.checked)}
+              style={{ width: 15, height: 15, accentColor: th.t }}
+            />
+            <label
+              htmlFor="erec"
+              style={{
+                margin: 0,
+                cursor: 'pointer',
+                textTransform: 'none',
+                letterSpacing: 0,
+                fontSize: 13,
+                color: th.t2,
+                fontFamily: "'Plus Jakarta Sans',sans-serif"
+              }}
+            >
+              Recurring monthly
+            </label>
           </div>
         </div>
-        <div style={{display:'flex',gap:10,marginTop:24}}>
-          <button className="bout" onClick={onClose} style={{flex:1}}>Cancel</button>
-          <button className="btn" onClick={()=>{if(!title||!date)return;setCal(prev=>[...prev,{id:Date.now(),title,date,type,amount:amount?+amount:null,recurring:recur}]);onClose();}} style={{flex:2}}>Save Event</button>
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+          <button className="bout" onClick={onClose} style={{ flex: 1 }}>
+            Cancel
+          </button>
+
+          <button
+            className="btn"
+            onClick={() => {
+              if (!title || !date) return;
+
+              setCal(prev => [
+                ...prev,
+                {
+                  id: Date.now(),
+                  title,
+                  date,
+                  type,
+                  amount: amount ? +amount : null,
+                  recurring: recur
+                }
+              ]);
+
+              onClose();
+            }}
+            style={{ flex: 2 }}
+          >
+            Save Event
+          </button>
         </div>
       </div>
     </div>
