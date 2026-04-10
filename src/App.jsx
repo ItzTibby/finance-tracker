@@ -187,7 +187,7 @@ function LoginScreen({pin, onAuth, isDark}) {
   const del = () => setEntry(e => e.slice(0,-1));
 
   return (
-    <div style={{minHeight:'100vh',background:th.bg,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+    <div style={{minHeight:'100vh',background:th.bg,display:'flex',alignItems:'center',justifyContent:'center'}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&family=DM+Mono:wght@500&display=swap');
         @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
         .shake{animation:shake .4s ease;}
@@ -218,7 +218,7 @@ function LoginScreen({pin, onAuth, isDark}) {
           <button className="pinbtn" onClick={del} style={{fontSize:16}}>⌫</button>
         </div>
 
-        {error&&<div style={{marginTop:20,fontSize:12,color:DK.exp,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Incorrect PIN</div>}
+        {error&&<div style={{marginTop:20,fontSize:12,color:DK.exp}}>Incorrect PIN</div>}
       </div>
     </div>
   );
@@ -232,13 +232,7 @@ export default function App() {
   const [modal,   setModal]   = useState(null);
   const [bDemo,   setBDemo]   = useLS('ft3_bdemo', false);
   const [pin,     setPin]     = useLS('ft3_pin', '');
-  const [authed,  setAuthed]  = useState(() => {
-    try {
-      return !localStorage.getItem('ft3_pin');
-    } catch {
-      return true;
-    }
-  });
+  const [authed,  setAuthed]  = useState(!localStorage.getItem('ft3_pin'));
 
   const [tx,     setTx]    = useLS('ft3_tx',    []);
   const [budg,   setBudg]  = useLS('ft3_budg',  CATS.map(c=>({category:c.name,limit:500})));
@@ -362,14 +356,14 @@ export default function App() {
           <div style={{borderTop:`1px solid ${th.bd2}`,paddingTop:16,marginTop:8}}>
             <div style={{paddingLeft:6,marginBottom:14}}>
               <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:10,fontWeight:700,textTransform:'uppercase',color:th.t3,marginBottom:4}}>Net Balance</div>
-              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:balance>=0?th.acc:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif",textShadow:balance>=0?'0 0 20px rgba(255,255,255,0.3)':'0 0 20px rgba(255,61,61,0.4)'}}>{fmtS(balance)}</div>
+              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:balance>=0?th.acc:th.exp,textShadow:balance>=0?'0 0 20px rgba(255,255,255,0.3)':'0 0 20px rgba(255,61,61,0.4)'}}>{fmtS(balance)}</div>
               {curr!=='GBP'&&<div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:10,color:th.t3,marginTop:3}}>1 GBP ≈ {(rates[curr]||1).toFixed(4)} {curr}</div>}
             </div>
             <div style={{display:'flex',gap:6}}>
               <button className="bout" onClick={()=>setIsDark(d=>!d)} style={{flex:1,padding:'8px 0',fontSize:11,textAlign:'center'}}>
                 {isDark?'☀':'◑'}
               </button>
-              <select value={curr} onChange={e=>setCurr(e.target.value)} style={{flex:1,padding:'8px 4px',fontSize:10,borderRadius:9,border:`1px solid ${th.bd}`,background:th.s2,color:th.t,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,cursor:'pointer'}}>
+              <select value={curr} onChange={e=>setCurr(e.target.value)} style={{flex:1,padding:'8px 4px',fontSize:10,borderRadius:9,border:`1px solid ${th.bd}`,background:th.s2,color:th.t,fontWeight:700,cursor:'pointer'}}>
                 {CURRENCIES.map(c=><option key={c.code} value={c.code}>{c.flag} {c.code}</option>)}
               </select>
               <button className={`nb${tab==='settings'?' on':''}`} onClick={()=>{setTab('settings');setSidebarOpen(false);}} style={{width:38,padding:'8px',justifyContent:'center',flexShrink:0,borderRadius:9,border:`1px solid ${tab==='settings'?'transparent':th.bd}`,fontSize:16}}>⚙</button>
@@ -465,8 +459,8 @@ function TxRow({t,onDel,showYear}) {
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:13,fontWeight:500,color:th.t,display:'flex',alignItems:'center',gap:6}}>
           {t.note||t.category}
-          {t.recurring&&<span style={{fontSize:8,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,color:th.t3,background:th.s2,border:`1px solid ${th.bd}`,padding:'1px 5px',borderRadius:3}}>REC</span>}
-          {t.autoLogged&&<span style={{fontSize:8,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,color:th.acc,background:th.accBg,padding:'1px 5px',borderRadius:3}}>AUTO</span>}
+          {t.recurring&&<span style={{fontSize:8,fontWeight:700,color:th.t3,background:th.s2,border:`1px solid ${th.bd}`,padding:'1px 5px',borderRadius:3}}>REC</span>}
+          {t.autoLogged&&<span style={{fontSize:8,fontWeight:700,color:th.acc,background:th.accBg,padding:'1px 5px',borderRadius:3}}>AUTO</span>}
         </div>
         <div className="mono" style={{marginTop:2}}>{t.category} · {new Date(t.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',...(showYear?{year:'numeric'}:{})})}{t.fromBank?` · ${t.fromBank}`:''}</div>
       </div>
@@ -501,7 +495,7 @@ function Alerts() {
         <div key={a.category} className="alertbar" style={{background:a.pct>100?th.expBg:`${th.exp}18`,border:`1px solid ${a.pct>100?th.exp:th.exp+'44'}`}}>
           <span style={{fontSize:16}}>{a.icon}</span>
           <span style={{flex:1,color:th.t,fontWeight:500}}>{a.category}</span>
-          <span style={{color:a.pct>100?th.exp:th.t2,fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11}}>
+          <span style={{color:a.pct>100?th.exp:th.t2,fontSize:11}}>
             {fmt(a.spent)} / {fmt(a.limit)} · <strong>{a.pct.toFixed(0)}%</strong> {a.pct>100?'OVER BUDGET':'used'}
           </span>
         </div>
@@ -540,7 +534,7 @@ function InsightsStrip({mIncome,mExpense,mBalance,pIncome,pExpense}) {
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 function DashTab({onAdd}) {
-  const {th,fmt,fmtS,tx,budg,goals,recurring,setTx}=useCtx();
+  const {th,fmt,fmtS,tx,budg,goals,recurring,setTx,cal}=useCtx();
   const now=new Date();
 
   // This month only
@@ -590,7 +584,7 @@ function DashTab({onAdd}) {
   const Delta=({d,invert})=>{
     if(!d) return null;
     const good=invert?!d.up:d.up;
-    return <span style={{fontSize:11,fontFamily:"'Plus Jakarta Sans',sans-serif",color:good?th.inc:th.exp,marginLeft:8}}>{d.up?'↑':'↓'}{d.pct}%</span>;
+    return <span style={{fontSize:11,color:good?th.inc:th.exp,marginLeft:8}}>{d.up?'↑':'↓'}{d.pct}%</span>;
   };
 
   return (
@@ -608,10 +602,10 @@ function DashTab({onAdd}) {
           <div key={c.l} className="card">
             <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',color:th.acc,marginBottom:12}}>{c.l}</div>
             <div style={{display:'flex',alignItems:'baseline',gap:4,flexWrap:'wrap'}}>
-              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:34,fontWeight:700,color:c.c,lineHeight:1,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmtS(c.v)}</div>
+              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:34,fontWeight:700,color:c.c,lineHeight:1}}>{fmtS(c.v)}</div>
               {c.d&&<Delta d={c.d} invert={c.inv}/>}
             </div>
-            {c.d&&<div style={{fontSize:11,color:th.t3,marginTop:6,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>vs last month</div>}
+            {c.d&&<div style={{fontSize:11,color:th.t3,marginTop:6}}>vs last month</div>}
           </div>
         ))}
       </div>
@@ -628,7 +622,7 @@ function DashTab({onAdd}) {
                 <linearGradient id="gi" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4ade80" stopOpacity={.25}/><stop offset="100%" stopColor="#4ade80" stopOpacity={0}/></linearGradient>
                 <linearGradient id="ge" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f87171" stopOpacity={.25}/><stop offset="100%" stopColor="#f87171" stopOpacity={0}/></linearGradient>
               </defs>
-              <XAxis dataKey="label" tick={{fill:th.t3,fontSize:12,fontFamily:"'Plus Jakarta Sans',sans-serif"}} axisLine={false} tickLine={false}/>
+              <XAxis dataKey="label" tick={{fill:th.t3,fontSize:12}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fill:th.t3,fontSize:11}} axisLine={false} tickLine={false} tickFormatter={v=>`£${v}`}/>
               <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={(v,n)=>[fmt(v),(n||'value').charAt(0).toUpperCase()+(n||'value').slice(1)]}/>
               <Area type="monotone" dataKey="income"  stroke={th.inc} strokeWidth={2} fill="url(#gi)" dot={false}/>
@@ -703,7 +697,7 @@ function DashTab({onAdd}) {
               const done=g.saved>=g.target;
               return (
                 <div key={g.id} style={{padding:'18px',background:th.s2,borderRadius:14,border:`1px solid ${done?th.acc+'44':th.bd2}`,position:'relative',overflow:'hidden'}}>
-                  {done&&<div style={{position:'absolute',top:10,right:10,fontSize:10,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,color:th.acc,background:th.accBg,padding:'2px 7px',borderRadius:4}}>DONE ✓</div>}
+                  {done&&<div style={{position:'absolute',top:10,right:10,fontSize:10,fontWeight:700,color:th.acc,background:th.accBg,padding:'2px 7px',borderRadius:4}}>DONE ✓</div>}
                   <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
                     <span style={{fontSize:22}}>{g.icon}</span>
                     <div>
@@ -711,11 +705,11 @@ function DashTab({onAdd}) {
                       <div className="mono" style={{marginTop:2,fontSize:11}}>Target {fmt(g.target)}</div>
                     </div>
                   </div>
-                  <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:done?th.acc:th.t,marginBottom:8,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmt(g.saved)}</div>
+                  <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:done?th.acc:th.t,marginBottom:8}}>{fmt(g.saved)}</div>
                   <div className="prog" style={{height:6,marginBottom:6}}>
                     <div className="pfill" style={{width:`${pct}%`,background:done?th.acc:th.acc+'99'}}/>
                   </div>
-                  <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:th.t3,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+                  <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:th.t3}}>
                     <span>{pct.toFixed(0)}%</span>
                     <span>{done?'Complete!':fmt(g.target-g.saved)+' left'}</span>
                   </div>
@@ -841,7 +835,7 @@ function AllTimeTab() {
         ].map(c=>(
           <div key={c.l} className="card">
             <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',color:th.acc,marginBottom:10}}>{c.l}</div>
-            <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:c.c,lineHeight:1,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{c.raw?c.v:fmtS(c.v)}</div>
+            <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:c.c,lineHeight:1}}>{c.raw?c.v:fmtS(c.v)}</div>
           </div>
         ))}
       </div>
@@ -864,7 +858,7 @@ function AllTimeTab() {
         {/* Savings rate */}
         <div className="card">
           <div className="sl">Savings Rate</div>
-          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:52,fontWeight:700,color:th.acc,fontFamily:"'Plus Jakarta Sans',sans-serif",lineHeight:1,marginBottom:10}}>
+          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:52,fontWeight:700,color:th.acc,lineHeight:1,marginBottom:10}}>
             {income>0?((balance/income)*100).toFixed(1):0}%
           </div>
           <div className="prog" style={{height:8,marginBottom:8}}>
@@ -884,7 +878,7 @@ function AllTimeTab() {
                 <linearGradient id="agi" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4ade80" stopOpacity={.25}/><stop offset="100%" stopColor="#4ade80" stopOpacity={0}/></linearGradient>
                 <linearGradient id="age" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f87171" stopOpacity={.25}/><stop offset="100%" stopColor="#f87171" stopOpacity={0}/></linearGradient>
               </defs>
-              <XAxis dataKey="label" tick={{fill:th.t3,fontSize:11,fontFamily:"'Plus Jakarta Sans',sans-serif"}} axisLine={false} tickLine={false}/>
+              <XAxis dataKey="label" tick={{fill:th.t3,fontSize:11}} axisLine={false} tickLine={false}/>
               <YAxis tick={{fill:th.t3,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`£${v}`}/>
               <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={(v,n)=>[fmt(v),(n||'value').charAt(0).toUpperCase()+(n||'value').slice(1)]}/>
               <Area type="monotone" dataKey="income"  stroke={th.inc} strokeWidth={2} fill="url(#agi)" dot={monthData.length<24}/>
@@ -908,7 +902,7 @@ function AllTimeTab() {
                     <span style={{fontSize:13,color:th.t,fontWeight:500}}>{c.icon} {c.name}</span>
                     <div style={{textAlign:'right'}}>
                       <span className="mono" style={{fontSize:12}}>{fmt(c.value)}</span>
-                      <span style={{fontSize:10,color:th.t3,marginLeft:6,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{pct.toFixed(0)}%</span>
+                      <span style={{fontSize:10,color:th.t3,marginLeft:6}}>{pct.toFixed(0)}%</span>
                     </div>
                   </div>
                   <div className="prog">
@@ -935,7 +929,7 @@ function AllTimeTab() {
                     <span style={{fontSize:13,color:th.t,fontWeight:500}}>{c.name}</span>
                     <div style={{textAlign:'right'}}>
                       <span className="mono" style={{fontSize:12}}>{fmt(c.value)}</span>
-                      <span style={{fontSize:10,color:th.t3,marginLeft:6,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{pct.toFixed(0)}%</span>
+                      <span style={{fontSize:10,color:th.t3,marginLeft:6}}>{pct.toFixed(0)}%</span>
                     </div>
                   </div>
                   <div className="prog">
@@ -1043,11 +1037,11 @@ function IncomeTab({onAdd}) {
       <div className="g3" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
         <div className="card">
           <div className="sl" style={{marginBottom:10}}>Total Income</div>
-          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:th.inc,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmtS(totalIncome)}</div>
+          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:th.inc}}>{fmtS(totalIncome)}</div>
         </div>
         <div className="card">
           <div className="sl" style={{marginBottom:10}}>This Month</div>
-          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:th.acc,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmtS(thisMonthIncome)}</div>
+          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:th.acc}}>{fmtS(thisMonthIncome)}</div>
         </div>
         <div className="card">
           <div className="sl" style={{marginBottom:10}}>Main Source</div>
@@ -1111,7 +1105,7 @@ function IncomeTab({onAdd}) {
 
             {/* Stacked proportion bar */}
             <div style={{marginTop:20}}>
-              <div style={{fontSize:10,color:th.t4,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,textTransform:'uppercase',marginBottom:6}}>Proportion</div>
+              <div style={{fontSize:10,color:th.t4,fontWeight:700,textTransform:'uppercase',marginBottom:6}}>Proportion</div>
               <div style={{display:'flex',height:10,borderRadius:5,overflow:'hidden',gap:1}}>
                 {byCat.map((c,i)=>{
                   const shades=['#00FF88','#00cc70','#009955','#006633','#003311'];
@@ -1125,7 +1119,7 @@ function IncomeTab({onAdd}) {
                   return (
                     <div key={c.name} style={{display:'flex',alignItems:'center',gap:5}}>
                       <div style={{width:6,height:6,borderRadius:1,background:shades[i]||shades[shades.length-1]}}/>
-                      <span style={{fontSize:10,color:th.t3,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:600,textTransform:'uppercase'}}>{c.name}</span>
+                      <span style={{fontSize:10,color:th.t3,fontWeight:600,textTransform:'uppercase'}}>{c.name}</span>
                     </div>
                   );
                 })}
@@ -1144,7 +1138,7 @@ function IncomeTab({onAdd}) {
                     <stop offset="100%" stopColor={th.inc} stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="label" tick={{fill:th.t3,fontSize:11,fontFamily:"'Plus Jakarta Sans',sans-serif"}} axisLine={false} tickLine={false}/>
+                <XAxis dataKey="label" tick={{fill:th.t3,fontSize:11}} axisLine={false} tickLine={false}/>
                 <YAxis tick={{fill:th.t3,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`£${v}`}/>
                 <Tooltip contentStyle={{background:'#111',border:'1px solid #2a2a2a',borderRadius:10,color:'#ffffff',fontSize:12}} itemStyle={{color:'#ffffff'}} labelStyle={{color:'#aaaaaa'}} formatter={(v,n)=>[fmt(v),n.charAt(0).toUpperCase()+n.slice(1)]}/>
                 <Area type="monotone" dataKey="total" stroke={th.inc} strokeWidth={2} fill="url(#incGrad)" dot={{fill:th.inc,r:3,strokeWidth:0}}/>
@@ -1159,10 +1153,10 @@ function IncomeTab({onAdd}) {
                   const change=prev&&prev.total>0?((m.total-prev.total)/prev.total*100):null;
                   return (
                     <div key={m.label} style={{padding:'10px 12px',background:th.s2,borderRadius:9,border:`1px solid ${th.bd2}`}}>
-                      <div style={{fontSize:9,color:th.t4,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,textTransform:'uppercase',marginBottom:5}}>{m.label}</div>
+                      <div style={{fontSize:9,color:th.t4,fontWeight:700,textTransform:'uppercase',marginBottom:5}}>{m.label}</div>
                       <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:15,fontWeight:800,color:th.t}}>{fmtS(m.total)}</div>
                       {change!==null&&(
-                        <div style={{fontSize:10,color:change>=0?th.inc:th.exp,marginTop:3,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+                        <div style={{fontSize:10,color:change>=0?th.inc:th.exp,marginTop:3}}>
                           {change>=0?'↑':'↓'}{Math.abs(change).toFixed(0)}%
                         </div>
                       )}
@@ -1304,12 +1298,12 @@ function BudgTab({onNew}) {
             <div>
               <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',color:th.acc,marginBottom:4}}>Monthly Total</div>
               <div style={{display:'flex',alignItems:'baseline',gap:8}}>
-                <span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:32,fontWeight:700,color:totalSpent>totalBudget?th.exp:th.t,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmt(totalSpent)}</span>
+                <span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:32,fontWeight:700,color:totalSpent>totalBudget?th.exp:th.t}}>{fmt(totalSpent)}</span>
                 <span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:13,color:th.t3}}>of {fmt(totalBudget)}</span>
               </div>
             </div>
             <div style={{textAlign:'right'}}>
-              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:totalSpent>totalBudget?th.exp:th.acc,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{totalBudget>0?((totalSpent/totalBudget)*100).toFixed(0):0}%</div>
+              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:totalSpent>totalBudget?th.exp:th.acc}}>{totalBudget>0?((totalSpent/totalBudget)*100).toFixed(0):0}%</div>
               <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,color:th.t3,marginTop:2}}>{fmt(Math.max(0,totalBudget-totalSpent))} remaining</div>
             </div>
           </div>
@@ -1411,11 +1405,11 @@ function GoalTab({onNew}) {
                 <button className="delbtn vis" onClick={()=>setGoals(goals.filter(x=>x.id!==g.id))}>✕</button>
               </div>
 
-              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:28,fontWeight:700,marginBottom:10,color:done?th.acc:th.t,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmt(g.saved)}</div>
+              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:28,fontWeight:700,marginBottom:10,color:done?th.acc:th.t}}>{fmt(g.saved)}</div>
               <div className="prog" style={{marginBottom:8}}>
                 <div className="pfill" style={{width:`${pct}%`,background:done?th.acc:th.acc+'99'}}/>
               </div>
-              <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:th.t3,marginBottom:14,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:th.t3,marginBottom:14}}>
                 <span>{pct.toFixed(0)}%</span>
                 <span>{done?'Complete!':fmt(remaining)+' to go'}</span>
               </div>
@@ -1424,17 +1418,17 @@ function GoalTab({onNew}) {
               {!done&&(
                 <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14}}>
                   {monthsNeeded!==null&&(
-                    <span style={{fontSize:10,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,color:th.t3,background:th.s2,border:`1px solid ${th.bd2}`,padding:'3px 8px',borderRadius:6}}>
+                    <span style={{fontSize:10,fontWeight:700,color:th.t3,background:th.s2,border:`1px solid ${th.bd2}`,padding:'3px 8px',borderRadius:6}}>
                       ~{monthsNeeded}mo at current rate
                     </span>
                   )}
                   {g.deadline&&(
-                    <span style={{fontSize:10,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,color:onTrack?th.inc:th.exp,background:onTrack?th.incBg:th.expBg,padding:'3px 8px',borderRadius:6}}>
+                    <span style={{fontSize:10,fontWeight:700,color:onTrack?th.inc:th.exp,background:onTrack?th.incBg:th.expBg,padding:'3px 8px',borderRadius:6}}>
                       {monthsLeft}mo left · {onTrack?'On track':'Behind'}
                     </span>
                   )}
                   {g.deadline&&(
-                    <span style={{fontSize:10,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,color:th.t3,background:th.s2,border:`1px solid ${th.bd2}`,padding:'3px 8px',borderRadius:6}}>
+                    <span style={{fontSize:10,fontWeight:700,color:th.t3,background:th.s2,border:`1px solid ${th.bd2}`,padding:'3px 8px',borderRadius:6}}>
                       Due {new Date(g.deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
                     </span>
                   )}
@@ -1502,7 +1496,7 @@ function CalTab({onNew}) {
                 <div key={day} className={`ccell${isToday?' tod':''}`} onClick={()=>setSel({day,evs})}>
                   <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:isToday?800:400,color:isToday?th.t:th.t3,marginBottom:2}}>{day}</div>
                   {evs.slice(0,2).map(e=>(
-                    <div key={e.id} style={{fontSize:8,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,background:EVT[e.type]?.bg,color:EVT[e.type]?.color,borderRadius:3,padding:'1px 4px',marginBottom:2,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{e.title}</div>
+                    <div key={e.id} style={{fontSize:8,fontWeight:700,background:EVT[e.type]?.bg,color:EVT[e.type]?.color,borderRadius:3,padding:'1px 4px',marginBottom:2,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{e.title}</div>
                   ))}
                   {evs.length>2&&<div style={{fontSize:8,color:th.t4}}>+{evs.length-2}</div>}
                 </div>
@@ -1541,7 +1535,7 @@ function CalTab({onNew}) {
                     <div style={{fontSize:12,fontWeight:500,color:th.t,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>{e.title}</div>
                     <div className="mono" style={{marginTop:1}}>{new Date(e.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}{e.amount?` · ${fmt(e.amount)}`:''}</div>
                   </div>
-                  {e.recurring&&<span style={{fontSize:8,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,color:th.t4,background:th.s2,border:`1px solid ${th.bd}`,padding:'2px 5px',borderRadius:3}}>REC</span>}
+                  {e.recurring&&<span style={{fontSize:8,fontWeight:700,color:th.t4,background:th.s2,border:`1px solid ${th.bd}`,padding:'2px 5px',borderRadius:3}}>REC</span>}
                 </div>
               ))
             }
@@ -1609,7 +1603,7 @@ function MonthlyTab() {
     if(!d||!isFinite(d.pct)) return null;
     const positive=invertColour?!d.up:d.up;
     return (
-      <span style={{fontSize:10,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,color:positive?th.inc:th.exp,background:positive?th.incBg:th.expBg,padding:'2px 7px',borderRadius:4,marginLeft:8}}>
+      <span style={{fontSize:10,fontWeight:700,color:positive?th.inc:th.exp,background:positive?th.incBg:th.expBg,padding:'2px 7px',borderRadius:4,marginLeft:8}}>
         {d.up?'↑':'↓'}{Math.abs(d.pct).toFixed(0)}% vs prev
       </span>
     );
@@ -1636,7 +1630,7 @@ function MonthlyTab() {
         ].map(c=>(
           <div key={c.l} className="card">
             <div className="sl" style={{marginBottom:10}}>{c.l}</div>
-            <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:c.c,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmtS(c.v)}</div>
+            <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:c.c}}>{fmtS(c.v)}</div>
             {c.d&&<DeltaBadge d={c.d} invertColour={c.inv}/>}
           </div>
         ))}
@@ -1733,7 +1727,7 @@ function NWTab() {
       <Hdr title="Net Worth" sub="Assets minus liabilities"/>
       <div className="g3" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
         {[{l:'Net Worth',v:nw,c:nw>=0?th.acc:th.exp},{l:'Total Assets',v:totalA,c:th.inc},{l:'Total Liabilities',v:totalL,c:th.exp}].map(c=>(
-          <div key={c.l} className="card"><div className="sl" style={{marginBottom:10}}>{c.l}</div><div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:c.c,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmtS(c.v)}</div></div>
+          <div key={c.l} className="card"><div className="sl" style={{marginBottom:10}}>{c.l}</div><div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:30,fontWeight:700,color:c.c}}>{fmtS(c.v)}</div></div>
         ))}
       </div>
       <div className="g2" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
@@ -1891,11 +1885,11 @@ function DebtTab() {
       <div className="g3" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
         <div className="card">
           <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',color:th.acc,marginBottom:10}}>Total Debt</div>
-          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:32,fontWeight:700,color:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmtS(totalDebt)}</div>
+          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:32,fontWeight:700,color:th.exp}}>{fmtS(totalDebt)}</div>
         </div>
         <div className="card">
           <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',color:th.acc,marginBottom:10}}>Debt-Free In</div>
-          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:32,fontWeight:700,color:th.t,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:32,fontWeight:700,color:th.t}}>
             {payoffYears>0?`${payoffYears}y `:''}
             {payoffRemainingMonths>0?`${payoffRemainingMonths}mo`:''}
             {payoffMonths===0?'Debt free!':''}
@@ -1904,7 +1898,7 @@ function DebtTab() {
         </div>
         <div className="card">
           <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',color:th.acc,marginBottom:10}}>Est. Interest</div>
-          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:32,fontWeight:700,color:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmtS(totalInterest)}</div>
+          <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:32,fontWeight:700,color:th.exp}}>{fmtS(totalInterest)}</div>
           <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,color:th.t3,marginTop:4}}>at current payment rate</div>
         </div>
       </div>
@@ -1967,7 +1961,7 @@ function DebtTab() {
                 <div key={d.id} className="card" style={{border:isTarget?`1px solid ${d.colour}66`:`1px solid ${th.bd}`}}>
                   <div style={{display:'flex',alignItems:'flex-start',gap:14}}>
                     {/* Rank badge */}
-                    <div style={{width:32,height:32,borderRadius:8,background:isTarget?d.colour:th.s2,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:13,fontWeight:800,color:isTarget?'#fff':th.t3,flexShrink:0}}>
+                    <div style={{width:32,height:32,borderRadius:8,background:isTarget?d.colour:th.s2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:800,color:isTarget?'#fff':th.t3,flexShrink:0}}>
                       {idx+1}
                     </div>
                     <div style={{flex:1}}>
@@ -1976,10 +1970,10 @@ function DebtTab() {
                           <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
                             <div style={{width:10,height:10,borderRadius:3,background:d.colour,flexShrink:0}}/>
                             <input value={d.name} onChange={e=>updateDebt(d.id,'name',e.target.value)} style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:14,fontWeight:700,color:th.t,background:'transparent',border:'none',outline:'none',padding:0,width:'auto'}}/>
-                            {isTarget&&<span style={{fontSize:9,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,color:d.colour,background:d.colour+'22',padding:'2px 7px',borderRadius:4}}>TARGET ❄</span>}
+                            {isTarget&&<span style={{fontSize:9,fontWeight:700,color:d.colour,background:d.colour+'22',padding:'2px 7px',borderRadius:4}}>TARGET ❄</span>}
                           </div>
                           <div style={{display:'flex',gap:16,flexWrap:'wrap'}}>
-                            <span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{fmt(d.balance)}</span>
+                            <span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:26,fontWeight:700,color:th.exp}}>{fmt(d.balance)}</span>
                             <div style={{display:'flex',gap:12,alignItems:'center'}}>
                               <div style={{textAlign:'center'}}>
                                 <div className="mono" style={{fontSize:10}}>MIN/MO</div>
@@ -2022,7 +2016,7 @@ function DebtTab() {
               date.setMonth(date.getMonth()+mo);
               return (
                 <div key={d.id} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',background:th.s2,borderRadius:10}}>
-                  <div style={{width:24,height:24,borderRadius:6,background:d.colour,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:800,color:'#fff',flexShrink:0}}>{i+1}</div>
+                  <div style={{width:24,height:24,borderRadius:6,background:d.colour,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:800,color:'#fff',flexShrink:0}}>{i+1}</div>
                   <div style={{flex:1}}>
                     <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:13,fontWeight:600,color:th.t}}>{d.name}</div>
                     <div className="mono" style={{marginTop:1}}>{fmt(d.balance)} · {d.interest}% APR</div>
@@ -2312,7 +2306,7 @@ function EmergencyTab() {
               <label>Target Months of Cover</label>
               <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:4}}>
                 {[1,2,3,6,9,12].map(m=>(
-                  <button key={m} onClick={()=>setTargetMonths(m)} style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${targetMonths===m?th.acc:th.bd}`,background:targetMonths===m?th.accBg:'transparent',color:targetMonths===m?th.acc:th.t3,fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer',transition:'all .15s'}}>
+                  <button key={m} onClick={()=>setTargetMonths(m)} style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${targetMonths===m?th.acc:th.bd}`,background:targetMonths===m?th.accBg:'transparent',color:targetMonths===m?th.acc:th.t3,fontSize:12,fontWeight:700,cursor:'pointer',transition:'all .15s'}}>
                     {m}mo
                   </button>
                 ))}
@@ -2509,7 +2503,7 @@ function BankTab() {
         <div style={{fontSize:13,color:th.t2,lineHeight:1.8,marginBottom:20}}>
           The backend server needs to be running to connect your bank. Open a second terminal in VS Code and run:
         </div>
-        <div style={{background:th.bg,borderRadius:9,padding:'14px 18px',fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:12,color:th.acc,marginBottom:20,border:`1px solid ${th.bd}`}}>
+        <div style={{background:th.bg,borderRadius:9,padding:'14px 18px',fontSize:12,color:th.acc,marginBottom:20,border:`1px solid ${th.bd}`}}>
           cd server<br/>
           npm install<br/>
           npm start
@@ -2524,7 +2518,7 @@ function BankTab() {
 
   // ── Loading ─────────────────────────────────────────────────────────────
   if(serverOk === null) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:300,color:th.t3,fontSize:13,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:300,color:th.t3,fontSize:13}}>
       Connecting to server...
     </div>
   );
@@ -2534,20 +2528,20 @@ function BankTab() {
     <>
       <Hdr title="Bank Connected" sub={`Live via TrueLayer · ${status.env === 'sandbox' ? 'Sandbox mode' : 'Live mode'}`}>
         <button onClick={loadAccounts} className="bout" style={{padding:'8px 14px',fontSize:11}}>↻ Refresh</button>
-        <button onClick={disconnect} style={{background:'transparent',border:`1px solid ${th.expBg}`,color:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',padding:'9px 18px',borderRadius:8,cursor:'pointer'}}>Disconnect</button>
+        <button onClick={disconnect} style={{background:'transparent',border:`1px solid ${th.expBg}`,color:th.exp,fontSize:11,fontWeight:700,textTransform:'uppercase',padding:'9px 18px',borderRadius:8,cursor:'pointer'}}>Disconnect</button>
       </Hdr>
 
-      {err&&<div style={{marginBottom:16,padding:'11px 14px',background:th.expBg,borderRadius:9,fontSize:12,color:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{err}</div>}
+      {err&&<div style={{marginBottom:16,padding:'11px 14px',background:th.expBg,borderRadius:9,fontSize:12,color:th.exp}}>{err}</div>}
 
       {/* Account cards */}
       {loading
-        ? <div style={{color:th.t3,fontSize:13,textAlign:'center',padding:'32px 0',fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Loading accounts...</div>
+        ? <div style={{color:th.t3,fontSize:13,textAlign:'center',padding:'32px 0'}}>Loading accounts...</div>
         : <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:12,marginBottom:20}}>
             {accounts.map(a=>(
               <div key={a.account_id} className="card">
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
                   <div style={{display:'flex',alignItems:'center',gap:10}}>
-                    <div style={{width:32,height:32,borderRadius:8,background:th.accBg,border:`1px solid ${th.acc}44`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:12,fontWeight:800,color:th.acc}}>
+                    <div style={{width:32,height:32,borderRadius:8,background:th.accBg,border:`1px solid ${th.acc}44`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,color:th.acc}}>
                       {(a.provider?.display_name||a.display_name||'B')[0]}
                     </div>
                     <div>
@@ -2555,7 +2549,7 @@ function BankTab() {
                       <div className="mono" style={{marginTop:1}}>{a.provider?.display_name||''} · {a.account_type}</div>
                     </div>
                   </div>
-                  <span style={{fontSize:9,fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,background:th.incBg,color:th.inc,padding:'3px 8px',borderRadius:4}}>LIVE</span>
+                  <span style={{fontSize:9,fontWeight:700,background:th.incBg,color:th.inc,padding:'3px 8px',borderRadius:4}}>LIVE</span>
                 </div>
                 <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:24,fontWeight:800,marginBottom:5,color:th.t}}>
                   {a.balance ? fmt(a.balance.current) : '—'}
@@ -2576,7 +2570,7 @@ function BankTab() {
       )}
 
       {loadingTx && (
-        <div className="card" style={{marginBottom:16,textAlign:'center',padding:'32px',color:th.t3,fontSize:13,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+        <div className="card" style={{marginBottom:16,textAlign:'center',padding:'32px',color:th.t3,fontSize:13}}>
           Fetching transactions...
         </div>
       )}
@@ -2656,7 +2650,7 @@ function BankTab() {
     <>
       <Hdr title="Bank Integration" sub="Real Open Banking via TrueLayer · FCA regulated · PSD2"/>
 
-      {err && <div style={{marginBottom:16,padding:'11px 14px',background:th.expBg,borderRadius:9,fontSize:12,color:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{err}</div>}
+      {err && <div style={{marginBottom:16,padding:'11px 14px',background:th.expBg,borderRadius:9,fontSize:12,color:th.exp}}>{err}</div>}
 
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12,marginBottom:20}}>
         {[
@@ -2765,7 +2759,7 @@ function SettingsTab() {
         <Row label="Currency" sub={curr==='GBP'?'Displaying in British Pounds':`1 GBP ≈ ${(rates[curr]||1).toFixed(4)} ${curr} (live rate)`}>
           <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:6,maxWidth:360}}>
             {CURRENCIES.map(c=>(
-              <button key={c.code} onClick={()=>setCurr(c.code)} style={{padding:'6px 4px',borderRadius:7,border:`1px solid ${curr===c.code?th.acc:th.bd}`,background:curr===c.code?th.accBg:'transparent',color:curr===c.code?th.acc:th.t3,fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:10,fontWeight:700,cursor:'pointer',transition:'all .15s',textAlign:'center'}}>
+              <button key={c.code} onClick={()=>setCurr(c.code)} style={{padding:'6px 4px',borderRadius:7,border:`1px solid ${curr===c.code?th.acc:th.bd}`,background:curr===c.code?th.accBg:'transparent',color:curr===c.code?th.acc:th.t3,fontSize:10,fontWeight:700,cursor:'pointer',transition:'all .15s',textAlign:'center'}}>
                 {c.flag}<br/>{c.code}
               </button>
             ))}
@@ -2795,15 +2789,15 @@ function SettingsTab() {
         </Row>
         {pin&&(
           <Row label="Remove PIN" sub="Disable the lock screen">
-            <button onClick={()=>{setPin('');setPinMsg('PIN removed');setTimeout(()=>setPinMsg(''),2000);}} style={{background:'transparent',border:`1px solid ${th.bd}`,color:th.t3,fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:600,textTransform:'uppercase',padding:'8px 14px',borderRadius:7,cursor:'pointer'}}>Remove</button>
+            <button onClick={()=>{setPin('');setPinMsg('PIN removed');setTimeout(()=>setPinMsg(''),2000);}} style={{background:'transparent',border:`1px solid ${th.bd}`,color:th.t3,fontSize:11,fontWeight:600,textTransform:'uppercase',padding:'8px 14px',borderRadius:7,cursor:'pointer'}}>Remove</button>
           </Row>
         )}
         {pin&&(
           <Row label="Lock now" sub="Sign out and return to the PIN screen">
-            <button onClick={()=>setAuthed(false)} style={{background:th.acc,border:'none',color:'#fff',fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',padding:'8px 16px',borderRadius:7,cursor:'pointer'}}>🔒 Lock</button>
+            <button onClick={()=>setAuthed(false)} style={{background:th.acc,border:'none',color:'#fff',fontSize:11,fontWeight:700,textTransform:'uppercase',padding:'8px 16px',borderRadius:7,cursor:'pointer'}}>🔒 Lock</button>
           </Row>
         )}
-        {pinMsg&&<div style={{marginTop:10,padding:'9px 13px',background:pinMsg.includes('✓')||pinMsg.includes('removed')?th.incBg:th.expBg,borderRadius:8,fontSize:12,color:pinMsg.includes('✓')||pinMsg.includes('removed')?th.inc:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{pinMsg}</div>}
+        {pinMsg&&<div style={{marginTop:10,padding:'9px 13px',background:pinMsg.includes('✓')||pinMsg.includes('removed')?th.incBg:th.expBg,borderRadius:8,fontSize:12,color:pinMsg.includes('✓')||pinMsg.includes('removed')?th.inc:th.exp}}>{pinMsg}</div>}
       </div>
 
       {/* Stats */}
@@ -2838,18 +2832,18 @@ function SettingsTab() {
             <input type="file" accept=".json" onChange={importData} style={{display:'none'}}/>
           </label>
         </Row>
-        {importOk&&<div style={{marginTop:10,padding:'10px 14px',background:th.incBg,borderRadius:8,fontSize:12,color:th.inc,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>✓ Backup imported successfully</div>}
-        {importErr&&<div style={{marginTop:10,padding:'10px 14px',background:th.expBg,borderRadius:8,fontSize:12,color:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>{importErr}</div>}
+        {importOk&&<div style={{marginTop:10,padding:'10px 14px',background:th.incBg,borderRadius:8,fontSize:12,color:th.inc}}>✓ Backup imported successfully</div>}
+        {importErr&&<div style={{marginTop:10,padding:'10px 14px',background:th.expBg,borderRadius:8,fontSize:12,color:th.exp}}>{importErr}</div>}
       </div>
 
       {/* Danger zone */}
       <div className="card" style={{border:`1px solid ${th.exp}22`}}>
         <div className="sl" style={{color:th.exp}}>Danger Zone</div>
         <Row label="Disconnect bank demo" sub="Remove all imported bank transactions and reset the connection">
-          <button onClick={()=>{setBDemo(false);setTx(tx.filter(t=>!t.fromBank));}} style={{background:'transparent',border:`1px solid ${th.bd}`,color:th.t3,fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:600,textTransform:'uppercase',padding:'8px 16px',borderRadius:7,cursor:'pointer'}}>Disconnect</button>
+          <button onClick={()=>{setBDemo(false);setTx(tx.filter(t=>!t.fromBank));}} style={{background:'transparent',border:`1px solid ${th.bd}`,color:th.t3,fontSize:11,fontWeight:600,textTransform:'uppercase',padding:'8px 16px',borderRadius:7,cursor:'pointer'}}>Disconnect</button>
         </Row>
         <Row label="Reset all data" sub="Permanently delete all transactions, goals, budgets and settings">
-          <button onClick={resetAll} style={{background:'transparent',border:`1px solid ${th.exp}`,color:th.exp,fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',padding:'8px 16px',borderRadius:7,cursor:'pointer',transition:'all .15s'}}>Reset Everything</button>
+          <button onClick={resetAll} style={{background:'transparent',border:`1px solid ${th.exp}`,color:th.exp,fontSize:11,fontWeight:700,textTransform:'uppercase',padding:'8px 16px',borderRadius:7,cursor:'pointer',transition:'all .15s'}}>Reset Everything</button>
         </Row>
       </div>
     </>
@@ -2888,7 +2882,7 @@ function TxModal({onClose}) {
         </div>
         <div style={{display:'flex',gap:8,marginBottom:20}}>
           {['income','expense'].map(t=>(
-            <button key={t} onClick={()=>{setType(t);if(!isEdit)setCat(t==='income'?'Salary':'Food');}} style={{flex:1,padding:'10px',border:`1px solid ${type===t?(t==='income'?th.inc+'55':th.exp+'55'):th.bd2}`,borderRadius:9,background:type===t?(t==='income'?th.incBg:th.expBg):'transparent',color:type===t?(t==='income'?th.inc:th.exp):th.t3,cursor:'pointer',fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:700,textTransform:'uppercase',transition:'all .15s'}}>
+            <button key={t} onClick={()=>{setType(t);if(!isEdit)setCat(t==='income'?'Salary':'Food');}} style={{flex:1,padding:'10px',border:`1px solid ${type===t?(t==='income'?th.inc+'55':th.exp+'55'):th.bd2}`,borderRadius:9,background:type===t?(t==='income'?th.incBg:th.expBg):'transparent',color:type===t?(t==='income'?th.inc:th.exp):th.t3,cursor:'pointer',fontSize:11,fontWeight:700,textTransform:'uppercase',transition:'all .15s'}}>
               {t}
             </button>
           ))}
@@ -2904,7 +2898,7 @@ function TxModal({onClose}) {
           <div><label>Date</label><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
           <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:th.s2,borderRadius:9,border:`1px solid ${th.bd2}`}}>
             <input type="checkbox" id="rec" checked={recur} onChange={e=>setRecur(e.target.checked)} style={{width:15,height:15,accentColor:th.acc}}/>
-            <label htmlFor="rec" style={{margin:0,cursor:'pointer',textTransform:'none',letterSpacing:0,fontSize:13,color:th.t2,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>Recurring monthly — show on dashboard for quick-add</label>
+            <label htmlFor="rec" style={{margin:0,cursor:'pointer',textTransform:'none',letterSpacing:0,fontSize:13,color:th.t2}}>Recurring monthly — show on dashboard for quick-add</label>
           </div>
         </div>
         <div style={{display:'flex',gap:10,marginTop:24}}>
@@ -2944,139 +2938,36 @@ function GoalModal({onClose}) {
   );
 }
 
-function EventModal({ onClose }) {
-  const { th, cal, setCal } = useCtx();
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [type, setType] = useState('bill');
-  const [amount, setAmount] = useState('');
-  const [recur, setRecur] = useState(false);
-
+function EventModal({onClose}) {
+  const {th,cal,setCal}=useCtx();
+  const [title,setTitle]=useState('');
+  const [date,setDate]=useState(new Date().toISOString().split('T')[0]);
+  const [type,setType]=useState('bill');
+  const [amount,setAmount]=useState('');
+  const [recur,setRecur]=useState(false);
   return (
-    <div className="overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div className="modal">
-        <div
-          style={{
-            fontFamily: "'Plus Jakarta Sans',sans-serif",
-            fontSize: 20,
-            fontWeight: 800,
-            marginBottom: 24,
-            color: th.t
-          }}
-        >
-          New Calendar Event
-        </div>
-
-        <div style={{ display: 'grid', gap: 14 }}>
-          <div>
-            <label>Title</label>
-            <input
-              type="text"
-              placeholder="e.g. Monthly Salary"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label>Type</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {Object.entries(EVT).map(([k, v]) => (
-                <button
-                  key={k}
-                  onClick={() => setType(k)}
-                  style={{
-                    padding: '9px 10px',
-                    border: `1px solid ${type === k ? v.color + '55' : th.bd2}`,
-                    borderRadius: 9,
-                    background: type === k ? v.bg : 'transparent',
-                    color: type === k ? v.color : th.t3,
-                    cursor: 'pointer',
-                    fontFamily: "'Plus Jakarta Sans',sans-serif",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    transition: 'all .12s'
-                  }}
-                >
-                  {v.label}
-                </button>
+        <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:20,fontWeight:800,marginBottom:24,color:th.t}}>New Calendar Event</div>
+        <div style={{display:'grid',gap:14}}>
+          <div><label>Title</label><input type="text" placeholder="e.g. Monthly Salary" value={title} onChange={e=>setTitle(e.target.value)}/></div>
+          <div><label>Type</label>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+              {Object.entries(EVT).map(([k,v])=>(
+                <button key={k} onClick={()=>setType(k)} style={{padding:'9px 10px',border:`1px solid ${type===k?v.color+'55':th.bd2}`,borderRadius:9,background:type===k?v.bg:'transparent',color:type===k?v.color:th.t3,cursor:'pointer',fontSize:10,fontWeight:700,textTransform:'uppercase',transition:'all .12s'}}>{v.label}</button>
               ))}
             </div>
           </div>
-
-          <div>
-            <label>Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label>Amount £ (optional)</label>
-            <input
-              type="number"
-              placeholder="0.00"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-            />
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <input
-              type="checkbox"
-              id="erec"
-              checked={recur}
-              onChange={e => setRecur(e.target.checked)}
-              style={{ width: 15, height: 15, accentColor: th.t }}
-            />
-            <label
-              htmlFor="erec"
-              style={{
-                margin: 0,
-                cursor: 'pointer',
-                textTransform: 'none',
-                letterSpacing: 0,
-                fontSize: 13,
-                color: th.t2,
-                fontFamily: "'Plus Jakarta Sans',sans-serif"
-              }}
-            >
-              Recurring monthly
-            </label>
+          <div><label>Date</label><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
+          <div><label>Amount £ (optional)</label><input type="number" placeholder="0.00" value={amount} onChange={e=>setAmount(e.target.value)}/></div>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <input type="checkbox" id="erec" checked={recur} onChange={e=>setRecur(e.target.checked)} style={{width:15,height:15,accentColor:th.t}}/>
+            <label htmlFor="erec" style={{margin:0,cursor:'pointer',textTransform:'none',letterSpacing:0,fontSize:13,color:th.t2}}>Recurring monthly</label>
           </div>
         </div>
-
-        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
-          <button className="bout" onClick={onClose} style={{ flex: 1 }}>
-            Cancel
-          </button>
-
-          <button
-            className="btn"
-            onClick={() => {
-              if (!title || !date) return;
-
-              setCal(prev => [
-                ...prev,
-                {
-                  id: Date.now(),
-                  title,
-                  date,
-                  type,
-                  amount: amount ? +amount : null,
-                  recurring: recur
-                }
-              ]);
-
-              onClose();
-            }}
-            style={{ flex: 2 }}
-          >
-            Save Event
-          </button>
+        <div style={{display:'flex',gap:10,marginTop:24}}>
+          <button className="bout" onClick={onClose} style={{flex:1}}>Cancel</button>
+          <button className="btn" onClick={()=>{if(!title||!date)return;setCal([...cal,{id:Date.now(),title,date,type,amount:amount?+amount:null,recurring:recur}]);onClose();}} style={{flex:2}}>Save Event</button>
         </div>
       </div>
     </div>
