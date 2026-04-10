@@ -1,6 +1,5 @@
 server/.env
 node_modules
-dist
 BANK_SETUP.md
 README.md
 package-lock.json
