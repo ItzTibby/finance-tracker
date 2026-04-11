@@ -2272,7 +2272,7 @@ function SubsTab() {
 
   const ICONS=['📦','🎬','🎵','☁️','🎮','📰','🏋️','🎨','💼','📱','🛒','🎓','💊','🔐','📺','🎙️'];
   const COLOURS=['#0066FF','#e50914','#1db954','#ff6600','#a855f7','#ec4899','#14b8a6','#f59e0b','#64748b','#ef4444'];
-  const CYCLES=['monthly','yearly','weekly'];
+  const CYCLES=['weekly','monthly','yearly'];
 
   const activeSubs=subs.filter(s=>s.active);
   const inactiveSubs=subs.filter(s=>!s.active);
