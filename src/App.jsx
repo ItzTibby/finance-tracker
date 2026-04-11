@@ -20,14 +20,15 @@ const LT={bg:'#ffffff',s:'#f5f5f5',s2:'#efefef',bd:'#e0e0e0',bd2:'#e8e8e8',t:'#0
 const CATS=[
   {name:'Housing',      icon:'🏠',c:'#FF4757'},
   {name:'Bills',        icon:'📄',c:'#FFA502'},
+  {name:'Food',         icon:'🍽️',c:'#FF6348'},
   {name:'Transport',    icon:'🚗',c:'#2ED573'},
   {name:'Subscriptions',icon:'📱',c:'#A855F7'},
   {name:'Debt',         icon:'💳',c:'#FF6B9D'},
   {name:'Health',       icon:'💊',c:'#00D2D3'},
   {name:'Shopping',     icon:'🛍️',c:'#ECCC68'},
-  {name:'Personal',     icon:'👤',c:'#FF6348'},
+  {name:'Personal',     icon:'👤',c:'#26D07C'},
   {name:'Entertainment',icon:'🎭',c:'#1E90FF'},
-  {name:'Savings',      icon:'💰',c:'#26D07C'},
+  {name:'Savings',      icon:'💰',c:'#A5D6A7'},
   {name:'Other',        icon:'📦',c:'#747D8C'},
 ];
 const ICATS=['Salary','Freelance','Investment','Gift','Other'];
@@ -178,7 +179,7 @@ function AuthScreen() {
       const {error:e}=await supabase.auth.signInWithPassword({email,password});
       if(e) setError(e.message);
     } else if(mode==='signup'){
-      const {error:e}=await supabase.auth.signUp({email,password});
+      const {error:e}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:'https://itztibby.github.io/finance-tracker'}});
       if(e) setError(e.message);
       else setMessage('Check your email to confirm your account then log in.');
     } else {
@@ -194,7 +195,7 @@ function AuthScreen() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         .auth-input{background:#0a0a0a;border:1px solid #1a1a1a;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:10px;outline:none;width:100%;transition:border-color .2s;box-sizing:border-box;}
-        .auth-input:focus{border-color:#fff;}
+        .auth-input:focus{border-color:#444;}
         .auth-btn{background:#fff;border:none;color:#000;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:14px;border-radius:10px;cursor:pointer;width:100%;transition:all .18s;box-shadow:0 0 20px rgba(255,255,255,0.18),0 0 40px rgba(255,255,255,0.06);}
         .auth-btn:hover{box-shadow:0 0 28px rgba(255,255,255,0.28);opacity:.92;}
         .auth-btn:disabled{opacity:.5;cursor:not-allowed;}
@@ -505,7 +506,7 @@ export default function App() {
         id: Date.now() + Math.random(),
         type: isIncome ? 'income' : 'expense',
         amount: e.amount,
-        category: isIncome ? 'Salary' : (e.type === 'subscription' ? 'Entertainment' : 'Housing'),
+        category: isIncome ? 'Salary' : (e.type === 'subscription' ? 'Subscriptions' : e.type === 'bill' ? 'Bills' : 'Housing'),
         note: e.title,
         date: now.toISOString().split('T')[0],
         recurring: false,
@@ -763,7 +764,7 @@ function InsightsStrip({mIncome,mExpense,mBalance,pIncome,pExpense}) {
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 function DashTab({onAdd}) {
-  const {th,fmt,fmtS,tx,budg,goals,recurring,setTx,cal}=useCtx();
+  const {th,fmt,fmtS,tx,budg,goals,recurring,setTx,cal,subs,setModal,setEditTx}=useCtx();
   const now=new Date();
 
   // This month only
@@ -907,7 +908,9 @@ function DashTab({onAdd}) {
                 <div className="mono" style={{marginTop:2}}>{t.category} · monthly</div>
               </div>
               <span className="mono" style={{color:t.type==='income'?th.inc:th.exp,fontSize:13}}>{t.type==='income'?'+':'−'}{fmt(t.amount)}</span>
-              <button className="btn" style={{padding:'7px 14px',fontSize:11,marginLeft:8}} onClick={()=>addRecurring(t)}>+ This Month</button>
+              <button className="delbtn vis" title="Edit" onClick={()=>{setEditTx(t);setModal('tx');}}>✎</button>
+              <button className="delbtn vis" onClick={()=>setTx(tx.filter(x=>x.id!==t.id))}>✕</button>
+              <button className="btn" style={{padding:'7px 14px',fontSize:11,marginLeft:4}} onClick={()=>addRecurring(t)}>+ This Month</button>
             </div>
           ))}
         </div>
@@ -959,24 +962,31 @@ function DashTab({onAdd}) {
           </div>
           {(()=>{
             const today=new Date();
-            const upcoming=cal
+            // Calendar events
+            const calPayments=cal
               .filter(e=>e.amount&&(e.type==='bill'||e.type==='subscription'||e.type==='payday'))
               .map(e=>{
                 const d=new Date(e.date);
-                // Find next occurrence (this month or next)
                 let next=new Date(today.getFullYear(),today.getMonth(),d.getDate());
                 if(next<today) next=new Date(today.getFullYear(),today.getMonth()+1,d.getDate());
                 const daysLeft=Math.ceil((next-today)/(1000*60*60*24));
-                return {...e,nextDate:next,daysLeft};
-              })
-              .sort((a,b)=>a.daysLeft-b.daysLeft)
-              .slice(0,6);
-            if(upcoming.length===0) return <EmptyState icon="📅" title="No scheduled payments" sub="Add events to your calendar with amounts to see them here."/>;
+                return {id:`cal_${e.id}`,title:e.title,amount:e.amount,type:e.type,nextDate:next,daysLeft};
+              });
+            // Active subscriptions with renewal dates
+            const subPayments=subs.filter(s=>s.active&&s.renewDate).map(s=>{
+              const d=new Date(s.renewDate);
+              let next=new Date(today.getFullYear(),today.getMonth(),d.getDate());
+              if(next<today) next=new Date(today.getFullYear(),today.getMonth()+1,d.getDate());
+              const daysLeft=Math.ceil((next-today)/(1000*60*60*24));
+              return {id:`sub_${s.id}`,title:s.name,amount:s.amount,type:'subscription',icon:s.icon,nextDate:next,daysLeft};
+            });
+            const upcoming=[...calPayments,...subPayments].sort((a,b)=>a.daysLeft-b.daysLeft).slice(0,6);
+            if(upcoming.length===0) return <EmptyState icon="📅" title="No upcoming payments" sub="Add calendar events or subscriptions with amounts to see them here."/>;
             const EVT_COLORS={payday:th.inc,bill:th.exp,subscription:'#A855F7'};
             return upcoming.map(e=>(
               <div key={e.id} className="txr">
                 <div style={{width:36,height:36,borderRadius:10,background:th.s2,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,flexShrink:0}}>
-                  {e.type==='payday'?'💰':e.type==='subscription'?'📱':'📄'}
+                  {e.icon||(e.type==='payday'?'💰':e.type==='subscription'?'📱':'📄')}
                 </div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:500,color:th.t}}>{e.title}</div>
@@ -985,7 +995,7 @@ function DashTab({onAdd}) {
                   </div>
                 </div>
                 <span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:13,fontWeight:600,color:EVT_COLORS[e.type]||th.t,flexShrink:0}}>
-                  {e.type==='payday'?'+':'-'}{fmt(e.amount)}
+                  -{fmt(e.amount)}
                 </span>
               </div>
             ));
