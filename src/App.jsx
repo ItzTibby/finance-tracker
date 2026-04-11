@@ -194,8 +194,9 @@ function AuthScreen() {
     <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        .auth-input{background:#0a0a0a;border:1px solid #1a1a1a;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:10px;outline:none;width:100%;transition:border-color .2s;box-sizing:border-box;}
-        .auth-input:focus{border-color:#444;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        .auth-input{background:#0a0a0a;border:1px solid #222;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:10px;outline:none !important;box-shadow:none !important;width:100%;transition:border-color .2s;display:block;}
+        .auth-input:focus{border-color:#444;outline:none !important;box-shadow:none !important;}
         .auth-btn{background:#fff;border:none;color:#000;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:14px;border-radius:10px;cursor:pointer;width:100%;transition:all .18s;box-shadow:0 0 20px rgba(255,255,255,0.18),0 0 40px rgba(255,255,255,0.06);}
         .auth-btn:hover{box-shadow:0 0 28px rgba(255,255,255,0.28);opacity:.92;}
         .auth-btn:disabled{opacity:.5;cursor:not-allowed;}
@@ -2951,13 +2952,15 @@ function SettingsTab() {
     e.target.value='';
   };
 
-  const resetAll=()=>{
+  const resetAll=async()=>{
     if(!window.confirm('This will permanently delete all your data from the database. Are you sure?')) return;
     if(!window.confirm('Are you really sure? This cannot be undone.')) return;
     const uid=user?.id;
     if(uid){
-      ['transactions','budgets','goals','calendar_events','assets','liabilities','debts','subscriptions','settings']
-        .forEach(t=>supabase.from(t).delete().eq('user_id',uid));
+      await Promise.all(
+        ['transactions','budgets','goals','calendar_events','assets','liabilities','debts','subscriptions','settings']
+          .map(t=>supabase.from(t).delete().eq('user_id',uid))
+      );
     }
     ['ft3_dark','ft3_curr','ft3_confirm','ft3_pin','ft3_bdemo'].forEach(k=>localStorage.removeItem(k));
     alert('All data has been reset.');
