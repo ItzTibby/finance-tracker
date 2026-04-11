@@ -1,5 +1,6 @@
-import { useState, useCallback, createContext, useContext, useEffect } from "react";
+import { useState, useCallback, createContext, useContext, useEffect, useRef } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, AreaChart, Area, XAxis, YAxis } from "recharts";
+import { supabase } from './supabase.js';
 
 const Ctx = createContext({});
 const useCtx = () => useContext(Ctx);
@@ -162,6 +163,77 @@ label{font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;
 }
 `;}
 
+// ── Auth Screen ───────────────────────────────────────────────────────────────
+function AuthScreen() {
+  const [mode,setMode]=useState('login');
+  const [email,setEmail]=useState('');
+  const [password,setPassword]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState('');
+  const [message,setMessage]=useState('');
+
+  const handle=async()=>{
+    setLoading(true);setError('');setMessage('');
+    if(mode==='login'){
+      const {error:e}=await supabase.auth.signInWithPassword({email,password});
+      if(e) setError(e.message);
+    } else if(mode==='signup'){
+      const {error:e}=await supabase.auth.signUp({email,password});
+      if(e) setError(e.message);
+      else setMessage('Check your email to confirm your account then log in.');
+    } else {
+      const {error:e}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+      if(e) setError(e.message);
+      else setMessage('Password reset email sent — check your inbox.');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        .auth-input{background:#0a0a0a;border:1px solid #1a1a1a;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:10px;outline:none;width:100%;transition:border-color .2s;box-sizing:border-box;}
+        .auth-input:focus{border-color:#fff;}
+        .auth-btn{background:#fff;border:none;color:#000;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:14px;border-radius:10px;cursor:pointer;width:100%;transition:all .18s;box-shadow:0 0 20px rgba(255,255,255,0.18),0 0 40px rgba(255,255,255,0.06);}
+        .auth-btn:hover{box-shadow:0 0 28px rgba(255,255,255,0.28);opacity:.92;}
+        .auth-btn:disabled{opacity:.5;cursor:not-allowed;}
+        .auth-link{background:none;border:none;color:#555;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;cursor:pointer;text-decoration:underline;padding:0;}
+        .auth-link:hover{color:#888;}
+      `}</style>
+      <div style={{width:380,padding:'0 20px'}}>
+        <div style={{textAlign:'center',marginBottom:40}}>
+          <div style={{fontSize:24,fontWeight:800,color:'#fff',marginBottom:6}}>Finance Tracker</div>
+          <div style={{fontSize:12,color:'#333',letterSpacing:'.1em',textTransform:'uppercase'}}>
+            {mode==='login'?'Sign in to your account':mode==='signup'?'Create your account':'Reset your password'}
+          </div>
+        </div>
+
+        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handle()}/>
+          {mode!=='reset'&&<input className="auth-input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handle()}/>}
+
+          {error&&<div style={{fontSize:12,color:'#FF3D3D',padding:'10px 14px',background:'#1a0000',borderRadius:8,border:'1px solid #FF3D3D44'}}>{error}</div>}
+          {message&&<div style={{fontSize:12,color:'#00FF88',padding:'10px 14px',background:'#001a0f',borderRadius:8,border:'1px solid #00FF8844'}}>{message}</div>}
+
+          <button className="auth-btn" onClick={handle} disabled={loading} style={{marginTop:4}}>
+            {loading?'Please wait...':(mode==='login'?'Sign In':mode==='signup'?'Create Account':'Send Reset Email')}
+          </button>
+        </div>
+
+        <div style={{textAlign:'center',marginTop:24,display:'flex',flexDirection:'column',gap:10}}>
+          {mode==='login'&&<>
+            <span style={{fontSize:12,color:'#444'}}>Don't have an account? <button className="auth-link" onClick={()=>{setMode('signup');setError('');setMessage('');}}>Sign up</button></span>
+            <span style={{fontSize:12,color:'#444'}}><button className="auth-link" onClick={()=>{setMode('reset');setError('');setMessage('');}}>Forgot password?</button></span>
+          </>}
+          {mode==='signup'&&<span style={{fontSize:12,color:'#444'}}>Already have an account? <button className="auth-link" onClick={()=>{setMode('login');setError('');setMessage('');}}>Sign in</button></span>}
+          {mode==='reset'&&<span style={{fontSize:12,color:'#444'}}><button className="auth-link" onClick={()=>{setMode('login');setError('');setMessage('');}}>Back to sign in</button></span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Login Screen ──────────────────────────────────────────────────────────────
 function LoginScreen({pin, onAuth, isDark}) {
   const th = isDark ? DK : LT;
@@ -225,21 +297,160 @@ function LoginScreen({pin, onAuth, isDark}) {
 }
 
 export default function App() {
+  // ── Auth ───────────────────────────────────────────────────────────────────
+  const [user,    setUser]       = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
+  const userRef = useRef(null);
+
+  useEffect(()=>{
+    supabase.auth.getSession().then(({data:{session}})=>{
+      setUser(session?.user??null);
+      userRef.current=session?.user??null;
+      setAuthLoading(false);
+    });
+    const {data:{subscription}}=supabase.auth.onAuthStateChange((_,session)=>{
+      setUser(session?.user??null);
+      userRef.current=session?.user??null;
+    });
+    return ()=>subscription.unsubscribe();
+  },[]);
+
+  // ── Preferences (localStorage) ─────────────────────────────────────────────
   const [isDark,  setIsDark]  = useLS('ft3_dark', true);
   const [curr,    setCurr]    = useLS('ft3_curr',  'GBP');
+  const [pin,     setPin]     = useLS('ft3_pin', '');
+  const [authed,  setAuthed]  = useState(!localStorage.getItem('ft3_pin'));
+  const [confirmDeletes, setConfirmDeletes] = useLS('ft3_confirm', true);
+  const [bDemo,   setBDemo]   = useLS('ft3_bdemo', false);
+
+  // ── Data state (Supabase) ──────────────────────────────────────────────────
+  const [tx,     setTxRaw]    = useState([]);
+  const [budg,   setBudgRaw]  = useState(CATS.map(c=>({category:c.name,limit:500})));
+  const [goals,  setGoalsRaw] = useState([]);
+  const [cal,    setCalRaw]   = useState([]);
+  const [assets, setAssetsRaw]= useState([]);
+  const [liabs,  setLiabsRaw] = useState([]);
+  const [debts,  setDebtsRaw] = useState([]);
+  const [subs,   setSubsRaw]  = useState([]);
+  const [efSaved,       setEfSavedRaw]    = useState(0);
+  const [efExpenses,    setEfExpensesRaw] = useState(0);
+  const [efMonths,      setEfMonthsRaw]   = useState(6);
+  const [debtExtra,     setDebtExtraRaw]  = useState(200);
+  const [debtMethod,    setDebtMethodRaw] = useState('snowball');
+
+  const txRef    = useRef([]);
+  const budgRef  = useRef(CATS.map(c=>({category:c.name,limit:500})));
+  const goalsRef = useRef([]);
+  const calRef   = useRef([]);
+  const assetsRef= useRef([]);
+  const liabsRef = useRef([]);
+  const debtsRef = useRef([]);
+  const subsRef  = useRef([]);
+
+  // ── DB mappers ─────────────────────────────────────────────────────────────
+  const dbToTx   = d=>({id:d.id,type:d.type,amount:parseFloat(d.amount),category:d.category,note:d.note||'',date:d.date,recurring:d.recurring,autoLogged:d.auto_logged,autoKey:d.auto_key,fromBank:d.from_bank});
+  const dbToBudg = d=>({id:d.id,category:d.category,limit:parseFloat(d.limit_amount),icon:d.icon,colour:d.colour});
+  const dbToGoal = d=>({id:d.id,name:d.name,target:parseFloat(d.target),saved:parseFloat(d.saved),icon:d.icon,deadline:d.deadline});
+  const dbToCal  = d=>({id:d.id,title:d.title,date:d.date,type:d.type,amount:d.amount?parseFloat(d.amount):null,recurring:d.recurring});
+  const dbToAsset= d=>({id:d.id,name:d.name,type:d.type,value:parseFloat(d.value)});
+  const dbToDebt = d=>({id:d.id,name:d.name,balance:parseFloat(d.balance),minPayment:parseFloat(d.min_payment),interest:parseFloat(d.interest),colour:d.colour});
+  const dbToSub  = d=>({id:d.id,name:d.name,amount:parseFloat(d.amount),cycle:d.cycle,category:d.category,colour:d.colour,icon:d.icon,active:d.active,renewDate:d.renew_date});
+
+  const txToDb   = (t,uid)=>({user_id:uid,type:t.type,amount:t.amount,category:t.category,note:t.note||'',date:t.date,recurring:t.recurring||false,auto_logged:t.autoLogged||false,auto_key:t.autoKey||null,from_bank:t.fromBank||null});
+  const budgToDb = (b,uid)=>({user_id:uid,category:b.category,limit_amount:b.limit,icon:b.icon||null,colour:b.colour||null});
+  const goalToDb = (g,uid)=>({user_id:uid,name:g.name,target:g.target,saved:g.saved,icon:g.icon,deadline:g.deadline||null});
+  const calToDb  = (e,uid)=>({user_id:uid,title:e.title,date:e.date,type:e.type,amount:e.amount||null,recurring:e.recurring||false});
+  const assetToDb= (a,uid)=>({user_id:uid,name:a.name,type:a.type,value:a.value});
+  const debtToDb = (d,uid)=>({user_id:uid,name:d.name,balance:d.balance,min_payment:d.minPayment,interest:d.interest,colour:d.colour});
+  const subToDb  = (s,uid)=>({user_id:uid,name:s.name,amount:s.amount,cycle:s.cycle,category:s.category,colour:s.colour,icon:s.icon,active:s.active,renew_date:s.renewDate||null});
+
+  // ── Load all data from Supabase ────────────────────────────────────────────
+  const loadAllData = async(uid)=>{
+    setDataLoading(true);
+    const [txR,budgR,goalsR,calR,assetsR,liabsR,debtsR,subsR,settR]=await Promise.all([
+      supabase.from('transactions').select('*').eq('user_id',uid).order('date',{ascending:false}),
+      supabase.from('budgets').select('*').eq('user_id',uid),
+      supabase.from('goals').select('*').eq('user_id',uid),
+      supabase.from('calendar_events').select('*').eq('user_id',uid),
+      supabase.from('assets').select('*').eq('user_id',uid),
+      supabase.from('liabilities').select('*').eq('user_id',uid),
+      supabase.from('debts').select('*').eq('user_id',uid),
+      supabase.from('subscriptions').select('*').eq('user_id',uid),
+      supabase.from('settings').select('*').eq('user_id',uid).single(),
+    ]);
+    if(txR.data)    { txRef.current=txR.data.map(dbToTx);       setTxRaw(txRef.current); }
+    if(budgR.data?.length) { budgRef.current=budgR.data.map(dbToBudg); setBudgRaw(budgRef.current); }
+    if(goalsR.data) { goalsRef.current=goalsR.data.map(dbToGoal); setGoalsRaw(goalsRef.current); }
+    if(calR.data)   { calRef.current=calR.data.map(dbToCal);     setCalRaw(calRef.current); }
+    if(assetsR.data){ assetsRef.current=assetsR.data.map(dbToAsset); setAssetsRaw(assetsRef.current); }
+    if(liabsR.data) { liabsRef.current=liabsR.data.map(dbToAsset); setLiabsRaw(liabsRef.current); }
+    if(debtsR.data) { debtsRef.current=debtsR.data.map(dbToDebt); setDebtsRaw(debtsRef.current); }
+    if(subsR.data)  { subsRef.current=subsR.data.map(dbToSub);   setSubsRaw(subsRef.current); }
+    if(settR.data)  {
+      if(settR.data.ef_saved!==null)    setEfSavedRaw(parseFloat(settR.data.ef_saved));
+      if(settR.data.ef_expenses!==null) setEfExpensesRaw(parseFloat(settR.data.ef_expenses));
+      if(settR.data.target_months)      setEfMonthsRaw(settR.data.target_months);
+      if(settR.data.extra_payment!==null) setDebtExtraRaw(parseFloat(settR.data.extra_payment));
+      if(settR.data.debt_method)        setDebtMethodRaw(settR.data.debt_method);
+    }
+    setDataLoading(false);
+  };
+
+  useEffect(()=>{ if(user) loadAllData(user.id); },[user?.id]);
+
+  // ── Supabase sync helpers ──────────────────────────────────────────────────
+  const syncReplace=async(table,items,toDb)=>{
+    const uid=userRef.current?.id; if(!uid) return;
+    await supabase.from(table).delete().eq('user_id',uid);
+    if(items.length) await supabase.from(table).insert(items.map(i=>toDb(i,uid)));
+  };
+
+  const syncSettings=async(patch)=>{
+    const uid=userRef.current?.id; if(!uid) return;
+    await supabase.from('settings').upsert({user_id:uid,...patch});
+  };
+
+  // ── Tx smart sync (diff-based) ─────────────────────────────────────────────
+  const setTx=useCallback((newOrFn)=>{
+    const prev=txRef.current;
+    const next=typeof newOrFn==='function'?newOrFn(prev):newOrFn;
+    txRef.current=next; setTxRaw(next);
+    const uid=userRef.current?.id; if(!uid) return;
+    const prevMap=new Map(prev.map(t=>[t.id,t]));
+    const nextMap=new Map(next.map(t=>[t.id,t]));
+    const added=next.filter(t=>!prevMap.has(t.id));
+    const deleted=prev.filter(t=>!nextMap.has(t.id));
+    const updated=next.filter(t=>prevMap.has(t.id)&&JSON.stringify(t)!==JSON.stringify(prevMap.get(t.id)));
+    if(deleted.length) deleted.forEach(t=>supabase.from('transactions').delete().eq('id',t.id).eq('user_id',uid));
+    if(updated.length) updated.forEach(t=>supabase.from('transactions').update(txToDb(t,uid)).eq('id',t.id).eq('user_id',uid));
+    if(added.length){
+      supabase.from('transactions').insert(added.map(t=>txToDb(t,uid))).select().then(({data})=>{
+        if(!data) return;
+        const idMap=new Map(added.map((t,i)=>[t.id,data[i]?.id]));
+        const updated2=txRef.current.map(t=>({...t,id:idMap.has(t.id)?idMap.get(t.id):t.id}));
+        txRef.current=updated2; setTxRaw(updated2);
+      });
+    }
+  },[]);
+
+  // ── Other setters ──────────────────────────────────────────────────────────
+  const setBudg=useCallback((n)=>{ const v=typeof n==='function'?n(budgRef.current):n; budgRef.current=v; setBudgRaw(v); syncReplace('budgets',v,budgToDb); },[]);
+  const setGoals=useCallback((n)=>{ const v=typeof n==='function'?n(goalsRef.current):n; goalsRef.current=v; setGoalsRaw(v); syncReplace('goals',v,goalToDb); },[]);
+  const setCal=useCallback((n)=>{ const v=typeof n==='function'?n(calRef.current):n; calRef.current=v; setCalRaw(v); syncReplace('calendar_events',v,calToDb); },[]);
+  const setAssets=useCallback((n)=>{ const v=typeof n==='function'?n(assetsRef.current):n; assetsRef.current=v; setAssetsRaw(v); syncReplace('assets',v,assetToDb); },[]);
+  const setLiabs=useCallback((n)=>{ const v=typeof n==='function'?n(liabsRef.current):n; liabsRef.current=v; setLiabsRaw(v); syncReplace('liabilities',v,assetToDb); },[]);
+  const setDebts=useCallback((n)=>{ const v=typeof n==='function'?n(debtsRef.current):n; debtsRef.current=v; setDebtsRaw(v); syncReplace('debts',v,debtToDb); },[]);
+  const setSubs=useCallback((n)=>{ const v=typeof n==='function'?n(subsRef.current):n; subsRef.current=v; setSubsRaw(v); syncReplace('subscriptions',v,subToDb); },[]);
+  const setEfSaved=useCallback((v)=>{ setEfSavedRaw(v); syncSettings({ef_saved:v}); },[]);
+  const setEfExpenses=useCallback((v)=>{ setEfExpensesRaw(v); syncSettings({ef_expenses:v}); },[]);
+  const setEfMonths=useCallback((v)=>{ setEfMonthsRaw(v); syncSettings({target_months:v}); },[]);
+  const setDebtExtra=useCallback((v)=>{ setDebtExtraRaw(v); syncSettings({extra_payment:v}); },[]);
+  const setDebtMethod=useCallback((v)=>{ setDebtMethodRaw(v); syncSettings({debt_method:v}); },[]);
+
   const [rates,   setRates]   = useState({GBP:1,AUD:1.98,USD:1.27,EUR:1.17,CAD:1.72,NZD:2.14,JPY:190,CHF:1.13,ZAR:23.5,INR:105,AED:4.67,SGD:1.71,HKD:9.93,SEK:13.2,NOK:13.5,DKK:8.73,MXN:22.1,BRL:6.4,PLN:5.0,THB:44.5,MYR:5.95,PHP:72.3,IDR:20200,KRW:1700,TRY:40.5});
   const [tab,     setTab]     = useState('dashboard');
   const [modal,   setModal]   = useState(null);
-  const [bDemo,   setBDemo]   = useLS('ft3_bdemo', false);
-  const [pin,     setPin]     = useLS('ft3_pin', '');
-  const [authed,  setAuthed]  = useState(!localStorage.getItem('ft3_pin'));
-
-  const [tx,     setTx]    = useLS('ft3_tx',    []);
-  const [budg,   setBudg]  = useLS('ft3_budg',  CATS.map(c=>({category:c.name,limit:500})));
-  const [goals,  setGoals] = useLS('ft3_goals', []);
-  const [cal,    setCal]   = useLS('ft3_cal',   []);
-  const [assets, setAssets]= useLS('ft3_assets',[]);
-  const [liabs,  setLiabs] = useLS('ft3_liabs', []);
 
   const th = isDark ? DK : LT;
   const currObj = CURRENCIES.find(c=>c.code===curr)||CURRENCIES[0];
@@ -277,8 +488,6 @@ export default function App() {
 
   const recurring = tx.filter(t=>t.recurring);
 
-  const [confirmDeletes, setConfirmDeletes] = useLS('ft3_confirm', true);
-
   // ── Recurring auto-log ─────────────────────────────────────────────────────
   useEffect(()=>{
     const now = new Date();
@@ -310,7 +519,7 @@ export default function App() {
     }
   }, [cal]);
 
-  const ctx = {th,isDark,setIsDark,curr,setCurr,rates,currObj,fmt,fmtS,tx,setTx,budg,setBudg,goals,setGoals,cal,setCal,assets,setAssets,liabs,setLiabs,alerts,recurring,income,expense,balance,bDemo,setBDemo,setModal,editTx,setEditTx,confirmDeletes,setConfirmDeletes,pin,setPin,setAuthed,sidebarOpen,setSidebarOpen};
+  const ctx = {th,isDark,setIsDark,curr,setCurr,rates,currObj,fmt,fmtS,tx,setTx,budg,setBudg,goals,setGoals,cal,setCal,assets,setAssets,liabs,setLiabs,alerts,recurring,income,expense,balance,bDemo,setBDemo,setModal,editTx,setEditTx,confirmDeletes,setConfirmDeletes,pin,setPin,setAuthed,sidebarOpen,setSidebarOpen,debts,setDebts,subs,setSubs,efSaved,setEfSaved,efExpenses,setEfExpenses,efMonths,setEfMonths,debtExtra,setDebtExtra,debtMethod,setDebtMethod,user,supabase};
 
   const TAB_GROUPS=[
     {label:'Overview', tabs:[['dashboard','▦','Dashboard'],['monthly','◑','Monthly'],['alltime','∞','All Time']]},
@@ -320,9 +529,29 @@ export default function App() {
   ];
   const TABS=TAB_GROUPS.flatMap(g=>g.tabs);
 
-  // Show login screen if PIN is set and not authenticated
-  if(!authed) return <LoginScreen pin={pin} onAuth={()=>setAuthed(true)} isDark={isDark}/>;
+  // Auth checks
+  if(authLoading) return (
+    <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{fontSize:20,fontWeight:800,color:'#fff',marginBottom:12}}>Finance Tracker</div>
+        <div style={{fontSize:12,color:'#333',letterSpacing:'.1em'}}>Loading...</div>
+      </div>
+    </div>
+  );
 
+  if(!user) return <AuthScreen/>;
+
+  if(dataLoading) return (
+    <div style={{minHeight:'100vh',background:'#000',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+      <div style={{textAlign:'center'}}>
+        <div style={{fontSize:20,fontWeight:800,color:'#fff',marginBottom:12}}>Finance Tracker</div>
+        <div style={{fontSize:12,color:'#333',letterSpacing:'.1em'}}>Loading your data...</div>
+      </div>
+    </div>
+  );
+
+  // Show PIN screen if set
+  if(!authed) return <LoginScreen pin={pin} onAuth={()=>setAuthed(true)} isDark={isDark}/>;
 
   return (
     <Ctx.Provider value={ctx}>
@@ -1780,10 +2009,7 @@ function NWTab() {
 
 // ── Debt Snowball ─────────────────────────────────────────────────────────────
 function DebtTab() {
-  const {th,fmt,fmtS}=useCtx();
-  const [debts,setDebts]=useLS('ft3_debts',[]);
-  const [extraPayment,setExtraPayment]=useLS('ft3_debt_extra',200);
-  const [method,setMethod]=useLS('ft3_debt_method','snowball');
+  const {th,fmt,fmtS,debts,setDebts,debtExtra:extraPayment,setDebtExtra:setExtraPayment,debtMethod:method,setDebtMethod:setMethod}=useCtx();
   const [showAdd,setShowAdd]=useState(false);
   const [newDebt,setNewDebt]=useState({name:'',balance:'',minPayment:'',interest:'',colour:'#f87171'});
 
@@ -2039,8 +2265,7 @@ function DebtTab() {
 
 // ── Subscriptions ─────────────────────────────────────────────────────────────
 function SubsTab() {
-  const {th,fmt,fmtS}=useCtx();
-  const [subs,setSubs]=useLS('ft3_subs',[]);
+  const {th,fmt,fmtS,subs,setSubs}=useCtx();
   const [showAdd,setShowAdd]=useState(false);
   const [editId,setEditId]=useState(null);
   const [form,setForm]=useState({name:'',amount:'',cycle:'monthly',category:'Entertainment',colour:'#0066FF',icon:'📦',renewDate:'',active:true});
@@ -2211,10 +2436,7 @@ function SubsTab() {
 
 // ── Emergency Fund ─────────────────────────────────────────────────────────────
 function EmergencyTab() {
-  const {th,fmt,fmtS,tx}=useCtx();
-  const [saved,setSaved]=useLS('ft3_ef_saved',0);
-  const [monthlyExpenses,setMonthlyExpenses]=useLS('ft3_ef_expenses',0);
-  const [targetMonths,setTargetMonths]=useLS('ft3_ef_months',6);
+  const {th,fmt,fmtS,tx,efSaved:saved,setEfSaved:setSaved,efExpenses:monthlyExpenses,setEfExpenses:setMonthlyExpenses,efMonths:targetMonths,setEfMonths:setTargetMonths}=useCtx();
   const [addAmount,setAddAmount]=useState('');
 
   // Auto-calculate monthly expenses from last 3 months if available
@@ -2683,11 +2905,15 @@ function BankTab() {
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 function SettingsTab() {
-  const {th,isDark,setIsDark,curr,setCurr,rates,currObj,confirmDeletes,setConfirmDeletes,tx,setTx,budg,setBudg,goals,setGoals,cal,setCal,assets,setAssets,liabs,setLiabs,setBDemo,fmt,pin,setPin,setAuthed}=useCtx();
+  const {th,isDark,setIsDark,curr,setCurr,rates,currObj,confirmDeletes,setConfirmDeletes,tx,setTx,budg,setBudg,goals,setGoals,cal,setCal,assets,setAssets,liabs,setLiabs,setBDemo,fmt,pin,setPin,setAuthed,user}=useCtx();
   const [importErr,setImportErr]=useState('');
   const [importOk, setImportOk] =useState(false);
   const [newPin,   setNewPin]   =useState('');
   const [pinMsg,   setPinMsg]   =useState('');
+
+  const signOut=async()=>{
+    await supabase.auth.signOut();
+  };
 
   const exportData=()=>{
     const backup={tx,budg,goals,cal,assets,liabs,exportedAt:new Date().toISOString(),version:'1'};
@@ -2716,12 +2942,14 @@ function SettingsTab() {
   };
 
   const resetAll=()=>{
-    if(!window.confirm('This will permanently delete all your data. Are you sure?')) return;
+    if(!window.confirm('This will permanently delete all your data from the database. Are you sure?')) return;
     if(!window.confirm('Are you really sure? This cannot be undone.')) return;
-    ['ft3_tx','ft3_budg','ft3_goals','ft3_cal','ft3_assets','ft3_liabs','ft3_bdemo',
-     'ft3_debts','ft3_debt_extra','ft3_debt_method',
-     'ft3_subs','ft3_ef_saved','ft3_ef_expenses','ft3_ef_months',
-     'ft3_curr','ft3_confirm','ft3_pin'].forEach(k=>localStorage.removeItem(k));
+    const uid=user?.id;
+    if(uid){
+      ['transactions','budgets','goals','calendar_events','assets','liabilities','debts','subscriptions','settings']
+        .forEach(t=>supabase.from(t).delete().eq('user_id',uid));
+    }
+    ['ft3_dark','ft3_curr','ft3_confirm','ft3_pin','ft3_bdemo'].forEach(k=>localStorage.removeItem(k));
     alert('All data has been reset.');
     window.location.reload();
   };
@@ -2834,6 +3062,14 @@ function SettingsTab() {
         </Row>
         {importOk&&<div style={{marginTop:10,padding:'10px 14px',background:th.incBg,borderRadius:8,fontSize:12,color:th.inc}}>✓ Backup imported successfully</div>}
         {importErr&&<div style={{marginTop:10,padding:'10px 14px',background:th.expBg,borderRadius:8,fontSize:12,color:th.exp}}>{importErr}</div>}
+      </div>
+
+      {/* Account */}
+      <div className="card" style={{marginBottom:18}}>
+        <div className="sl">Account</div>
+        <Row label="Signed in as" sub={user?.email||'Unknown'}>
+          <button onClick={signOut} style={{background:'transparent',border:`1px solid ${th.bd}`,color:th.t3,fontSize:11,fontWeight:700,textTransform:'uppercase',padding:'8px 16px',borderRadius:7,cursor:'pointer',transition:'all .15s'}}>Sign Out</button>
+        </Row>
       </div>
 
       {/* Danger zone */}
